@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#ff6f00">
-    <meta name="description" content="App de Visitas Técnicas - Paneles Solares">
-    <title>Visita Técnica - Paneles Solares</title>
+    <meta name="theme-color" content="#1B2E5A">
+    <meta name="description" content="Solix SAS - Visitas Técnicas Paneles Solares">
+    <title>Solix SAS - Visita Técnica</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="stylesheet" href="css/styles.css">
@@ -13,11 +13,78 @@
     <script src="js/xlsx.full.min.js"></script>
 </head>
 <body>
+    <!-- ========== SPLASH SCREEN ========== -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-bg">
+            <div class="splash-particles" id="particles"></div>
+            <div class="splash-rays"></div>
+        </div>
+        <div class="splash-content">
+            <!-- Logo SVG Solix -->
+            <div class="splash-logo" id="splash-logo">
+                <svg viewBox="0 0 280 100" class="solix-logo-svg">
+                    <!-- S estilizada con gradiente -->
+                    <defs>
+                        <linearGradient id="grad-s" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#F7941D"/>
+                            <stop offset="50%" style="stop-color:#00A3E0"/>
+                            <stop offset="100%" style="stop-color:#1B2E5A"/>
+                        </linearGradient>
+                    </defs>
+                    <path class="logo-s" d="M30 20 C30 20, 15 22, 12 35 C9 48, 25 52, 30 55 C35 58, 42 62, 38 75 C34 88, 18 85, 15 80" 
+                          stroke="url(#grad-s)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                    <!-- Texto Solix -->
+                    <text x="55" y="68" class="logo-text-main" fill="#1B2E5A" font-family="'Segoe UI', Arial, sans-serif" font-size="52" font-weight="700">Solix</text>
+                    <!-- SAS -->
+                    <text x="227" y="68" class="logo-text-sas" fill="#1B2E5A" font-family="'Segoe UI', Arial, sans-serif" font-size="22" font-weight="400">SAS</text>
+                </svg>
+            </div>
+            <div class="splash-tagline" id="splash-tagline">
+                <span class="tagline-word" style="--i:0">Energía</span>
+                <span class="tagline-word" style="--i:1">Solar</span>
+                <span class="tagline-word" style="--i:2">Inteligente</span>
+            </div>
+            <div class="splash-loader" id="splash-loader">
+                <div class="loader-bar"><div class="loader-fill"></div></div>
+                <p>Cargando aplicación...</p>
+            </div>
+        </div>
+        <div class="splash-bottom">
+            <div class="solar-panel-icon">
+                <svg viewBox="0 0 60 60" width="40" height="40">
+                    <rect x="5" y="15" width="50" height="35" rx="3" fill="#1B2E5A" opacity="0.8"/>
+                    <line x1="5" y1="27" x2="55" y2="27" stroke="#00A3E0" stroke-width="1"/>
+                    <line x1="5" y1="39" x2="55" y2="39" stroke="#00A3E0" stroke-width="1"/>
+                    <line x1="22" y1="15" x2="22" y2="50" stroke="#00A3E0" stroke-width="1"/>
+                    <line x1="38" y1="15" x2="38" y2="50" stroke="#00A3E0" stroke-width="1"/>
+                    <circle cx="30" cy="8" r="6" fill="#F7941D" opacity="0.9"/>
+                    <line x1="30" y1="0" x2="30" y2="3" stroke="#F7941D" stroke-width="1.5"/>
+                    <line x1="38" y1="4" x2="36" y2="6" stroke="#F7941D" stroke-width="1.5"/>
+                    <line x1="22" y1="4" x2="24" y2="6" stroke="#F7941D" stroke-width="1.5"/>
+                    <line x1="40" y1="8" x2="37" y2="8" stroke="#F7941D" stroke-width="1.5"/>
+                    <line x1="20" y1="8" x2="23" y2="8" stroke="#F7941D" stroke-width="1.5"/>
+                </svg>
+            </div>
+            <p class="splash-version">Visita Técnica v2.0</p>
+        </div>
+    </div>
+
     <!-- ========== HEADER ========== -->
-    <header class="app-header">
+    <header class="app-header" id="app-header" style="display:none;">
         <div class="header-content">
-            <h1>☀️ Visita Técnica</h1>
-            <p>Paneles Solares</p>
+            <svg viewBox="0 0 200 50" class="header-logo">
+                <defs>
+                    <linearGradient id="grad-h" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#F7941D"/>
+                        <stop offset="100%" style="stop-color:#00A3E0"/>
+                    </linearGradient>
+                </defs>
+                <path d="M12 8 C12 8, 5 9, 4 16 C3 23, 11 25, 13 27 C15 29, 18 31, 16 37 C14 43, 7 42, 6 39" 
+                      stroke="url(#grad-h)" stroke-width="4" fill="none" stroke-linecap="round"/>
+                <text x="24" y="35" fill="white" font-family="'Segoe UI', Arial, sans-serif" font-size="26" font-weight="700">Solix</text>
+                <text x="108" y="35" fill="rgba(255,255,255,0.8)" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="400">SAS</text>
+                <text x="24" y="47" fill="rgba(255,255,255,0.7)" font-family="'Segoe UI', Arial, sans-serif" font-size="9">Visita Técnica</text>
+            </svg>
         </div>
         <button id="btn-menu" class="btn-icon" title="Menú">☰</button>
     </header>
@@ -25,7 +92,7 @@
     <!-- ========== MENÚ LATERAL ========== -->
     <div id="sidebar" class="sidebar">
         <div class="sidebar-header">
-            <h2>☀️ Menú</h2>
+            <h2>⚡ Menú</h2>
             <button id="btn-close-menu" class="btn-icon">✕</button>
         </div>
         <nav>
@@ -35,6 +102,9 @@
             <a href="#" data-action="sync-sheets">☁️ Sincronizar a Google Sheets</a>
             <a href="#" data-action="configuracion">⚙️ Configuración</a>
         </nav>
+        <div class="sidebar-footer">
+            <p>Solix SAS &copy; 2026</p>
+        </div>
     </div>
     <div id="overlay" class="overlay"></div>
 
@@ -542,7 +612,7 @@
             </div>
             <div class="config-section">
                 <h3>📱 Información de la App</h3>
-                <p>Versión: 1.0.0</p>
+                <p>Versión: 2.0.0 — Solix SAS</p>
                 <p>Visitas guardadas: <span id="total-visitas">0</span></p>
                 <button type="button" id="btn-borrar-todo" class="btn btn-danger">🗑️ Borrar Todos los Datos</button>
             </div>
@@ -552,6 +622,40 @@
 
     <!-- Toast de notificaciones -->
     <div id="toast" class="toast"></div>
+
+    <!-- Splash Screen Script -->
+    <script>
+    (function() {
+        // Crear partículas flotantes
+        const container = document.getElementById('particles');
+        if (container) {
+            const colors = ['#F7941D', '#00A3E0', '#FFD54F', '#4FC3F7', '#FFA726'];
+            for (let i = 0; i < 25; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = Math.random() * 6 + 2;
+                p.style.cssText = `
+                    width: ${size}px; height: ${size}px;
+                    left: ${Math.random() * 100}%;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    --dur: ${Math.random() * 4 + 3}s;
+                    animation-delay: ${Math.random() * 5}s;
+                `;
+                container.appendChild(p);
+            }
+        }
+        // Ocultar splash y mostrar app
+        setTimeout(function() {
+            const splash = document.getElementById('splash-screen');
+            const header = document.getElementById('app-header');
+            if (splash) splash.classList.add('hide');
+            if (header) header.style.display = 'flex';
+            setTimeout(function() {
+                if (splash) splash.style.display = 'none';
+            }, 700);
+        }, 4200);
+    })();
+    </script>
 
     <!-- Scripts -->
     <script src="js/app.js"></script>

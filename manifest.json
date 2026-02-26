@@ -1,12 +1,12 @@
 {
-    "name": "Visita Técnica - Paneles Solares",
-    "short_name": "VisitaSolar",
-    "description": "App para visitas técnicas de instalación de paneles solares",
+    "name": "Solix SAS - Visita Técnica Solar",
+    "short_name": "Solix VT",
+    "description": "App Solix SAS para registro de visitas técnicas de instalación de paneles solares",
     "start_url": "./index.html",
     "scope": "./",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#ff6f00",
+    "background_color": "#0F1D3D",
+    "theme_color": "#1B2E5A",
     "orientation": "portrait",
     "icons": [
         {
