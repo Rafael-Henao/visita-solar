@@ -1,10 +1,10 @@
-const CACHE_NAME = 'visita-solar-v1';
+const CACHE_NAME = 'visita-solar-v2';
 const ASSETS = [
-    '/',
-    '/index.html',
-    '/css/styles.css',
-    '/js/app.js',
-    '/manifest.json'
+    './',
+    './index.html',
+    './css/styles.css',
+    './js/app.js',
+    './manifest.json'
 ];
 
 self.addEventListener('install', event => {
@@ -35,7 +35,7 @@ self.addEventListener('fetch', event => {
             });
         }).catch(() => {
             if (event.request.mode === 'navigate') {
-                return caches.match('/index.html');
+                return caches.match('./index.html');
             }
         })
     );
