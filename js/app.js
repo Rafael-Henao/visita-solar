@@ -72,6 +72,9 @@
                     case 'sync-sheets':
                         sincronizarGoogleSheets();
                         break;
+                    case 'sync-onedrive':
+                        sincronizarOneDrive();
+                        break;
                     case 'configuracion':
                         document.getElementById('view-configuracion').classList.add('active');
                         updateConfigInfo();
@@ -904,6 +907,66 @@
             .catch(() => showToast('Error al sincronizar', 'error'));
     }
 
+    // ========== ONEDRIVE / POWER AUTOMATE SYNC ==========
+    function sincronizarOneDrive() {
+        const url = localStorage.getItem('onedrive-url');
+        if (!url) {
+            showToast('Configura la URL de Power Automate primero', 'error');
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-configuracion').classList.add('active');
+            return;
+        }
+
+        const visitas = JSON.parse(localStorage.getItem('visitas_solar') || '[]');
+        if (visitas.length === 0) {
+            showToast('No hay visitas para sincronizar', 'error');
+            return;
+        }
+
+        showToast('💼 Sincronizando con OneDrive...', '');
+
+        const datosLimpios = visitas.map(v => {
+            const copia = Object.assign({}, v);
+            delete copia.fotos;
+            delete copia.firma;
+            if (copia.checklist) {
+                for (const [k, val] of Object.entries(copia.checklist)) {
+                    copia['check_' + k] = val;
+                }
+                delete copia.checklist;
+            }
+            if (copia.mediciones) {
+                for (const [k, val] of Object.entries(copia.mediciones)) {
+                    copia['med_' + k] = val;
+                }
+                delete copia.mediciones;
+            }
+            if (copia.analisisSolar) {
+                for (const [k, val] of Object.entries(copia.analisisSolar)) {
+                    copia['solar_' + k] = val;
+                }
+                delete copia.analisisSolar;
+            }
+            return copia;
+        });
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datosLimpios)
+        })
+            .then(res => {
+                if (res.ok || res.status === 202) {
+                    showToast('✅ Datos enviados a OneDrive', 'success');
+                } else {
+                    throw new Error('Status: ' + res.status);
+                }
+            })
+            .catch(err => {
+                showToast('Error al sincronizar con OneDrive: ' + err.message, 'error');
+            });
+    }
+
     // ========== HISTORIAL ==========
     function renderHistorial() {
         const visitas = JSON.parse(localStorage.getItem('visitas_solar') || '[]');
@@ -974,9 +1037,17 @@
         const savedUrl = localStorage.getItem('sheets-url');
         if (savedUrl) document.getElementById('sheets-url').value = savedUrl;
 
+        const savedOneDrive = localStorage.getItem('onedrive-url');
+        if (savedOneDrive) document.getElementById('onedrive-url').value = savedOneDrive;
+
         document.getElementById('btn-guardar-config').addEventListener('click', () => {
             localStorage.setItem('sheets-url', document.getElementById('sheets-url').value);
-            showToast('Configuración guardada ✓', 'success');
+            showToast('Configuración de Google Sheets guardada ✓', 'success');
+        });
+
+        document.getElementById('btn-guardar-onedrive').addEventListener('click', () => {
+            localStorage.setItem('onedrive-url', document.getElementById('onedrive-url').value);
+            showToast('Configuración de OneDrive guardada ✓', 'success');
         });
 
         document.getElementById('btn-borrar-todo').addEventListener('click', () => {

@@ -109,7 +109,8 @@
             <a href="#" data-action="nueva-visita" class="active">📋 Nueva Visita</a>
             <a href="#" data-action="historial">📂 Historial de Visitas</a>
             <a href="#" data-action="exportar-todo">📊 Exportar Todo a Excel</a>
-            <a href="#" data-action="sync-sheets">☁️ Sincronizar a Google Sheets</a>
+            <a href="#" data-action="sync-sheets">☁️ Google Sheets</a>
+            <a href="#" data-action="sync-onedrive">💼 OneDrive 365</a>
             <a href="#" data-action="configuracion">⚙️ Configuración</a>
         </nav>
         <div class="sidebar-footer">
@@ -728,8 +729,32 @@
                 <button type="button" id="btn-guardar-config" class="btn btn-primary">Guardar Configuración</button>
             </div>
             <div class="config-section">
-                <h3>📱 Información de la App</h3>
-                <p>Versión: 2.0.0 — Solix SAS</p>
+                <h3>� OneDrive / Microsoft 365</h3>
+                <p class="hint">Sincroniza las visitas directamente con el OneDrive empresarial usando Power Automate</p>
+                <div class="form-group">
+                    <label for="onedrive-url">URL del Flow de Power Automate</label>
+                    <input type="url" id="onedrive-url" placeholder="https://prod-xx.westus.logic.azure.com:443/workflows/...">
+                </div>
+                <button type="button" id="btn-guardar-onedrive" class="btn btn-primary">💾 Guardar URL OneDrive</button>
+                <details class="config-help" style="margin-top: 0.8rem;">
+                    <summary style="cursor:pointer; color: var(--sky); font-weight:600;">📖 ¿Cómo configurar Power Automate? (paso a paso)</summary>
+                    <div class="help-content" style="margin-top:0.5rem; padding:0.8rem; background:#f0f5ff; border-radius:8px; font-size:0.82rem; line-height:1.6;">
+                        <p><strong>1.</strong> Entra a <a href="https://make.powerautomate.com" target="_blank" style="color:var(--sky)">make.powerautomate.com</a> con tu cuenta empresarial</p>
+                        <p><strong>2.</strong> Clic en <strong>+ Crear</strong> → <strong>Flujo de nube instantáneo</strong></p>
+                        <p><strong>3.</strong> Nombre: <em>"Visitas Solares Solix"</em> → Trigger: <strong>"Cuando se recibe una solicitud HTTP"</strong></p>
+                        <p><strong>4.</strong> En el trigger, pega este esquema JSON:</p>
+                        <pre style="background:#1B2E5A; color:#FFD54F; padding:0.5rem; border-radius:6px; overflow-x:auto; font-size:0.72rem;">{"type":"array","items":{"type":"object","properties":{"id":{"type":"integer"},"fecha":{"type":"string"},"cliente":{"type":"string"},"direccion":{"type":"string"},"gps":{"type":"string"}}}}</pre>
+                        <p><strong>5.</strong> Agrega acción: <strong>"Crear archivo" (OneDrive for Business)</strong></p>
+                        <p>• Carpeta: <em>/Visitas Solares/</em><br>• Nombre: <em>Visitas_@{utcNow()}.json</em><br>• Contenido: selecciona el <strong>Body</strong> del trigger</p>
+                        <p><strong>6.</strong> <strong>Guardar</strong> el flujo → Vuelve al trigger → Copia la <strong>URL HTTP POST</strong></p>
+                        <p><strong>7.</strong> Pega esa URL arriba y guarda 👆</p>
+                        <p style="margin-top:0.5rem;"><strong>💡 TIP:</strong> También puedes agregar una acción <em>"Agregar fila a tabla de Excel"</em> para que los datos vayan directo a un Excel en OneDrive.</p>
+                    </div>
+                </details>
+            </div>
+            <div class="config-section">
+                <h3>�📱 Información de la App</h3>
+                <p>Versión: 2.1.0 — Solix SAS</p>
                 <p>Visitas guardadas: <span id="total-visitas">0</span></p>
                 <button type="button" id="btn-borrar-todo" class="btn btn-danger">🗑️ Borrar Todos los Datos</button>
             </div>
