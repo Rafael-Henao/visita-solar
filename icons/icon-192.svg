@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="32" fill="#ff6f00"/>
+  <circle cx="96" cy="86" r="36" fill="#FFD54F"/>
+  <g stroke="#FFD54F" stroke-width="5" stroke-linecap="round">
+    <line x1="96" y1="36" x2="96" y2="24"/>
+    <line x1="96" y1="148" x2="96" y2="136"/>
+    <line x1="46" y1="86" x2="34" y2="86"/>
+    <line x1="158" y1="86" x2="146" y2="86"/>
+    <line x1="60.6" y1="50.6" x2="52.1" y2="42.1"/>
+    <line x1="139.9" y1="129.9" x2="131.4" y2="121.4"/>
+    <line x1="60.6" y1="121.4" x2="52.1" y2="129.9"/>
+    <line x1="139.9" y1="42.1" x2="131.4" y2="50.6"/>
+  </g>
+  <rect x="58" y="130" width="76" height="8" rx="2" fill="#FFD54F"/>
+  <rect x="66" y="142" width="60" height="6" rx="2" fill="#FFD54F" opacity="0.7"/>
+  <text x="96" y="176" text-anchor="middle" fill="white" font-family="Arial" font-size="14" font-weight="bold">SOLAR</text>
+</svg>
