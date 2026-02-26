@@ -669,5 +669,28 @@
 
     <!-- Scripts -->
     <script src="js/app.js"></script>
+
+    <!-- Forzar actualización del Service Worker -->
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(function(reg) {
+            // Verificar actualizaciones inmediatamente
+            reg.update();
+            reg.addEventListener('updatefound', function() {
+                var newSW = reg.installing;
+                newSW.addEventListener('statechange', function() {
+                    if (newSW.state === 'activated') {
+                        // Nueva versión activada, recargar
+                        window.location.reload();
+                    }
+                });
+            });
+        });
+        // Si el SW toma control, recargar para usar la nueva versión
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+            window.location.reload();
+        });
+    }
+    </script>
 </body>
 </html>

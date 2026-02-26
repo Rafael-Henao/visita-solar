@@ -1,4 +1,4 @@
-const CACHE_NAME = 'visita-solar-v5';
+const CACHE_NAME = 'visita-solar-v6';
 const ASSETS = [
     './',
     './index.html',
@@ -21,25 +21,26 @@ self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(keys =>
             Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-        )
+        ).then(() => self.clients.claim())
     );
-    self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
+    // Network-first: intenta la red, si falla usa caché
     event.respondWith(
-        caches.match(event.request).then(cached => {
-            return cached || fetch(event.request).then(response => {
-                if (response.status === 200) {
-                    const clone = response.clone();
-                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-                }
-                return response;
-            });
-        }).catch(() => {
-            if (event.request.mode === 'navigate') {
-                return caches.match('./index.html');
+        fetch(event.request).then(response => {
+            if (response.status === 200) {
+                const clone = response.clone();
+                caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
             }
+            return response;
+        }).catch(() => {
+            return caches.match(event.request).then(cached => {
+                if (cached) return cached;
+                if (event.request.mode === 'navigate') {
+                    return caches.match('./index.html');
+                }
+            });
         })
     );
 });
