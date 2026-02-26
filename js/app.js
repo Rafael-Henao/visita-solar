@@ -106,8 +106,9 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // ========== GPS ==========
+    // ========== GPS + ANÁLISIS SOLAR ==========
     function initGPS() {
+        // Botón GPS básico del paso 1
         document.getElementById('btn-gps').addEventListener('click', () => {
             if (!navigator.geolocation) {
                 showToast('GPS no disponible en este dispositivo', 'error');
@@ -133,6 +134,332 @@
                 { enableHighAccuracy: true, timeout: 10000 }
             );
         });
+
+        // Botón Análisis Solar completo (Paso 2)
+        const btnSolar = document.getElementById('btn-solar-analysis');
+        if (btnSolar) {
+            btnSolar.addEventListener('click', runSolarAnalysis);
+        }
+
+        // Botón abrir Google Maps
+        const btnGmaps = document.getElementById('btn-open-gmaps');
+        if (btnGmaps) {
+            btnGmaps.addEventListener('click', () => {
+                const coords = document.getElementById('gps-coords').value;
+                if (coords) {
+                    window.open('https://www.google.com/maps/@' + coords.replace(' ', '') + ',18z/data=!3m1!1e1', '_blank');
+                }
+            });
+        }
+    }
+
+    function runSolarAnalysis() {
+        if (!navigator.geolocation) {
+            showToast('GPS no disponible', 'error');
+            return;
+        }
+        const btn = document.getElementById('btn-solar-analysis');
+        btn.innerHTML = '⏳ Analizando posición solar...';
+        btn.classList.add('loading');
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                const acc = pos.coords.accuracy;
+                const alt = pos.coords.altitude;
+
+                // Guardar coords en paso 1 también
+                document.getElementById('gps-coords').value = lat.toFixed(6) + ', ' + lng.toFixed(6);
+
+                // Mostrar mapa satelital
+                showSatelliteMap(lat, lng);
+
+                // Mostrar datos GPS
+                showGPSData(lat, lng, acc, alt);
+
+                // Calcular y mostrar trayectoria solar
+                showSunTrajectory(lat, lng);
+
+                btn.innerHTML = '✅ Análisis completado — Toca para actualizar';
+                btn.classList.remove('loading');
+                showToast('Análisis solar completo ✓', 'success');
+            },
+            (err) => {
+                showToast('Error GPS: ' + err.message, 'error');
+                btn.innerHTML = '🛰️ Obtener Análisis Solar';
+                btn.classList.remove('loading');
+            },
+            { enableHighAccuracy: true, timeout: 15000 }
+        );
+    }
+
+    function showSatelliteMap(lat, lng) {
+        const container = document.getElementById('solar-map-container');
+        const iframe = document.getElementById('map-iframe');
+        // Usar OpenStreetMap embed (gratuito, sin API key)
+        iframe.src = 'https://www.openstreetmap.org/export/embed.html?bbox=' +
+            (lng - 0.003) + ',' + (lat - 0.002) + ',' + (lng + 0.003) + ',' + (lat + 0.002) +
+            '&layer=mapnik&marker=' + lat + ',' + lng;
+        container.style.display = 'block';
+    }
+
+    function showGPSData(lat, lng, accuracy, altitude) {
+        const section = document.getElementById('solar-gps-data');
+        document.getElementById('solar-lat').textContent = 'Lat: ' + lat.toFixed(6) + '°';
+        document.getElementById('solar-lng').textContent = 'Lng: ' + lng.toFixed(6) + '°';
+        document.getElementById('solar-accuracy').textContent = '± ' + (accuracy ? accuracy.toFixed(0) : '--') + ' m';
+        document.getElementById('solar-altitude').textContent = altitude ? altitude.toFixed(0) + ' m.s.n.m.' : 'No disponible';
+        section.style.display = 'grid';
+    }
+
+    // ========== CÁLCULOS SOLARES (SunCalc) ==========
+    // Algoritmos basados en NOAA Solar Calculator
+    function calcSunPosition(date, lat, lng) {
+        const rad = Math.PI / 180;
+        const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 86400000);
+        const B = (360 / 365) * (dayOfYear - 81) * rad;
+
+        // Ecuación del tiempo (minutos)
+        const EoT = 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
+
+        // Declinación solar
+        const decl = 23.45 * Math.sin((360 / 365) * (dayOfYear - 81) * rad);
+        const declRad = decl * rad;
+        const latRad = lat * rad;
+
+        // Hora solar
+        const solarNoonMin = 720 - 4 * lng - EoT;
+        const tzOffset = -date.getTimezoneOffset();
+        const solarNoon = solarNoonMin + tzOffset;
+
+        // Ángulo horario del amanecer/atardecer
+        const cosHA = (Math.sin(-0.833 * rad) - Math.sin(latRad) * Math.sin(declRad)) /
+                       (Math.cos(latRad) * Math.cos(declRad));
+
+        let sunrise, sunset, daylight;
+        if (cosHA > 1 || cosHA < -1) {
+            // Sol no sale o no se pone
+            sunrise = null; sunset = null; daylight = cosHA < -1 ? 24 : 0;
+        } else {
+            const HA = Math.acos(cosHA) / rad;
+            const riseMin = solarNoon - HA * 4;
+            const setMin = solarNoon + HA * 4;
+            sunrise = riseMin;
+            sunset = setMin;
+            daylight = (setMin - riseMin) / 60;
+        }
+
+        // Elevación solar máxima (al mediodía solar)
+        const maxElevation = 90 - Math.abs(lat - decl);
+
+        // Azimut del amanecer y atardecer
+        const cosAzSunrise = (Math.sin(declRad) - Math.sin(latRad) * Math.sin(-0.833 * rad)) /
+                              (Math.cos(latRad) * Math.cos(-0.833 * rad));
+        const azSunrise = Math.acos(Math.max(-1, Math.min(1, cosAzSunrise))) / rad;
+        const azSunset = 360 - azSunrise;
+
+        // Posición actual del sol
+        const nowMin = date.getHours() * 60 + date.getMinutes() + tzOffset - (solarNoonMin - 720 + tzOffset);
+        const hourAngle = nowMin / 4; // grados
+        const hourAngleRad = hourAngle * rad;
+        const sinElev = Math.sin(latRad) * Math.sin(declRad) +
+                         Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngleRad);
+        const currentElevation = Math.asin(Math.max(-1, Math.min(1, sinElev))) / rad;
+
+        const cosAz = (Math.sin(declRad) - Math.sin(latRad) * sinElev) /
+                       (Math.cos(latRad) * Math.cos(Math.asin(sinElev)));
+        let currentAzimuth = Math.acos(Math.max(-1, Math.min(1, cosAz))) / rad;
+        if (hourAngle > 0) currentAzimuth = 360 - currentAzimuth;
+
+        return {
+            sunrise, sunset, solarNoon, daylight,
+            maxElevation, decl,
+            azSunrise, azSunset,
+            currentElevation, currentAzimuth
+        };
+    }
+
+    function minToTime(minutes) {
+        if (minutes == null) return '--:--';
+        const h = Math.floor(minutes / 60) % 24;
+        const m = Math.round(minutes % 60);
+        return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+    }
+
+    function showSunTrajectory(lat, lng) {
+        const now = new Date();
+        const sun = calcSunPosition(now, lat, lng);
+        const section = document.getElementById('solar-sun-data');
+
+        // Tiempos
+        document.getElementById('sun-rise-time').textContent = minToTime(sun.sunrise);
+        document.getElementById('sun-set-time').textContent = minToTime(sun.sunset);
+        document.getElementById('sun-noon-time').textContent = minToTime(sun.solarNoon);
+
+        // Azimuts y elevación
+        document.getElementById('sun-rise-azimuth').textContent = 'Azimut: ' + sun.azSunrise.toFixed(1) + '°';
+        document.getElementById('sun-set-azimuth').textContent = 'Azimut: ' + sun.azSunset.toFixed(1) + '°';
+        document.getElementById('sun-noon-elevation').textContent = 'Elevación máx: ' + sun.maxElevation.toFixed(1) + '°';
+
+        // Extras
+        document.getElementById('sun-daylight').textContent = sun.daylight.toFixed(1) + ' horas';
+
+        // Orientación óptima (para hemisferio correspondiente)
+        const hemisphere = lat >= 0 ? 'Sur (180°)' : 'Norte (0°)';
+        document.getElementById('sun-optimal-orientation').textContent = hemisphere;
+
+        // Inclinación óptima ≈ latitud
+        document.getElementById('sun-optimal-tilt').textContent = Math.abs(lat).toFixed(0) + '°';
+
+        // Posición actual
+        if (sun.currentElevation > 0) {
+            document.getElementById('sun-current-pos').textContent =
+                'Az: ' + sun.currentAzimuth.toFixed(0) + '° | Elev: ' + sun.currentElevation.toFixed(1) + '°';
+        } else {
+            document.getElementById('sun-current-pos').textContent = 'Bajo el horizonte 🌙';
+        }
+
+        section.style.display = 'block';
+
+        // Dibujar brújula solar
+        drawSolarCompass(sun, lat);
+    }
+
+    function drawSolarCompass(sun, lat) {
+        const canvas = document.getElementById('solar-compass');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width, h = canvas.height;
+        const cx = w / 2, cy = h / 2, r = (w / 2) - 30;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Fondo circular
+        const bgGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r + 20);
+        bgGrad.addColorStop(0, '#E8F0FE');
+        bgGrad.addColorStop(1, '#C5D5F0');
+        ctx.beginPath();
+        ctx.arc(cx, cy, r + 20, 0, Math.PI * 2);
+        ctx.fillStyle = bgGrad;
+        ctx.fill();
+
+        // Círculos de elevación
+        for (let elev = 30; elev <= 90; elev += 30) {
+            const eR = r * (1 - elev / 90);
+            ctx.beginPath();
+            ctx.arc(cx, cy, eR, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(27,46,90,0.15)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(27,46,90,0.35)';
+            ctx.font = '9px sans-serif';
+            ctx.fillText(elev + '°', cx + 3, cy - eR + 11);
+        }
+
+        // Puntos cardinales
+        const cardinals = [
+            { label: 'N', angle: 0, color: '#E53935' },
+            { label: 'E', angle: 90, color: '#1B2E5A' },
+            { label: 'S', angle: 180, color: '#1B2E5A' },
+            { label: 'O', angle: 270, color: '#1B2E5A' }
+        ];
+        const rad = Math.PI / 180;
+        cardinals.forEach(c => {
+            const a = (c.angle - 90) * rad;
+            const x = cx + (r + 14) * Math.cos(a);
+            const y = cy + (r + 14) * Math.sin(a);
+            ctx.fillStyle = c.color;
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(c.label, x, y);
+        });
+
+        // Trayectoria del sol (arco de amanecer a atardecer)
+        if (sun.sunrise != null && sun.sunset != null) {
+            ctx.beginPath();
+            ctx.strokeStyle = '#F7941D';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([]);
+
+            const steps = 60;
+            const riseMin = sun.sunrise;
+            const setMin = sun.sunset;
+            for (let i = 0; i <= steps; i++) {
+                const t = riseMin + (setMin - riseMin) * (i / steps);
+                const nowDate = new Date();
+                const fakeDate = new Date(nowDate);
+                const tzOff = -nowDate.getTimezoneOffset();
+                // Calcular ángulo horario para este momento
+                const minutesFromNoon = t - sun.solarNoon;
+                const ha = minutesFromNoon / 4 * rad;
+                const latRad = lat * rad;
+                const declRad = sun.decl * rad;
+                const sinE = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(ha);
+                const elev = Math.asin(Math.max(-1, Math.min(1, sinE))) / rad;
+                const cosAz = (Math.sin(declRad) - Math.sin(latRad) * sinE) / (Math.cos(latRad) * Math.cos(Math.asin(sinE)));
+                let az = Math.acos(Math.max(-1, Math.min(1, cosAz))) / rad;
+                if (minutesFromNoon > 0) az = 360 - az;
+
+                const pr = r * (1 - Math.max(0, elev) / 90);
+                const pa = (az - 90) * rad;
+                const px = cx + pr * Math.cos(pa);
+                const py = cy + pr * Math.sin(pa);
+
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+
+            // Punto de amanecer 🌅
+            const rAz = (sun.azSunrise - 90) * rad;
+            ctx.beginPath();
+            ctx.arc(cx + r * Math.cos(rAz), cy + r * Math.sin(rAz), 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFB74D';
+            ctx.fill();
+            ctx.strokeStyle = '#E65100'; ctx.lineWidth = 1.5; ctx.stroke();
+
+            // Punto de atardecer 🌇
+            const sAz = (sun.azSunset - 90) * rad;
+            ctx.beginPath();
+            ctx.arc(cx + r * Math.cos(sAz), cy + r * Math.sin(sAz), 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#E65100';
+            ctx.fill();
+            ctx.strokeStyle = '#BF360C'; ctx.lineWidth = 1.5; ctx.stroke();
+
+            // Sol actual (si está sobre horizonte)
+            if (sun.currentElevation > 0) {
+                const cR = r * (1 - sun.currentElevation / 90);
+                const cA = (sun.currentAzimuth - 90) * rad;
+                const sx = cx + cR * Math.cos(cA);
+                const sy = cy + cR * Math.sin(cA);
+
+                // Resplandor
+                const sunGlow = ctx.createRadialGradient(sx, sy, 0, sx, sy, 14);
+                sunGlow.addColorStop(0, 'rgba(247,148,29,0.8)');
+                sunGlow.addColorStop(1, 'rgba(247,148,29,0)');
+                ctx.beginPath();
+                ctx.arc(sx, sy, 14, 0, Math.PI * 2);
+                ctx.fillStyle = sunGlow;
+                ctx.fill();
+
+                // Sol
+                ctx.beginPath();
+                ctx.arc(sx, sy, 7, 0, Math.PI * 2);
+                ctx.fillStyle = '#F7941D';
+                ctx.fill();
+                ctx.strokeStyle = '#FF6F00'; ctx.lineWidth = 2; ctx.stroke();
+            }
+        }
+
+        // Línea norte (roja)
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx, cy - r);
+        ctx.strokeStyle = 'rgba(229,57,53,0.3)';
+        ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
     }
 
     // ========== FOTOS ==========
@@ -272,6 +599,24 @@
             pagoBimestral: document.getElementById('pago-bimestral').value,
             motivo: document.getElementById('motivo').value,
 
+            // Análisis Solar
+            analisisSolar: {
+                latitud: document.getElementById('solar-lat').textContent,
+                longitud: document.getElementById('solar-lng').textContent,
+                precision: document.getElementById('solar-accuracy').textContent,
+                altitud: document.getElementById('solar-altitude').textContent,
+                amanecer: document.getElementById('sun-rise-time').textContent,
+                amanecerAzimut: document.getElementById('sun-rise-azimuth').textContent,
+                cenitSolar: document.getElementById('sun-noon-time').textContent,
+                cenitElevacion: document.getElementById('sun-noon-elevation').textContent,
+                atardecer: document.getElementById('sun-set-time').textContent,
+                atardecerAzimut: document.getElementById('sun-set-azimuth').textContent,
+                horasLuz: document.getElementById('sun-daylight').textContent,
+                orientacionOptima: document.getElementById('sun-optimal-orientation').textContent,
+                inclinacionOptima: document.getElementById('sun-optimal-tilt').textContent,
+                posicionActual: document.getElementById('sun-current-pos').textContent
+            },
+
             // Checklist
             checklist: {},
             tipoTecho: document.getElementById('tipo-techo').value,
@@ -370,6 +715,22 @@
             ['Pago Bimestral ($)', data.pagoBimestral],
             ['Motivo / Interés', data.motivo],
             [''],
+            ['ANÁLISIS SOLAR GPS'],
+            ['Latitud', data.analisisSolar.latitud],
+            ['Longitud', data.analisisSolar.longitud],
+            ['Precisión GPS', data.analisisSolar.precision],
+            ['Altitud', data.analisisSolar.altitud],
+            ['Amanecer', data.analisisSolar.amanecer],
+            ['Azimut Amanecer', data.analisisSolar.amanecerAzimut],
+            ['Cénit Solar (Máx. Plenitud)', data.analisisSolar.cenitSolar],
+            ['Elevación Máxima', data.analisisSolar.cenitElevacion],
+            ['Atardecer', data.analisisSolar.atardecer],
+            ['Azimut Atardecer', data.analisisSolar.atardecerAzimut],
+            ['Horas de Luz Solar', data.analisisSolar.horasLuz],
+            ['Orientación Óptima Paneles', data.analisisSolar.orientacionOptima],
+            ['Inclinación Óptima', data.analisisSolar.inclinacionOptima],
+            ['Posición Solar al Momento', data.analisisSolar.posicionActual],
+            [''],
             ['CONCLUSIONES'],
             ['Viabilidad', data.viabilidad],
             ['Presupuesto Estimado ($)', data.presupuestoEstimado],
@@ -462,7 +823,10 @@
         const rows = [
             ['ID', 'Fecha', 'Hora', 'Cliente', 'Email', 'Teléfono', 'Dirección', 'GPS',
                 'Asesor', 'Tipo Cliente', 'Tarifa CFE', 'No. Servicio CFE',
-                'Consumo Bimestral kWh', 'Pago Bimestral $', 'Tipo Techo',
+                'Consumo Bimestral kWh', 'Pago Bimestral $',
+                'Amanecer', 'Cénit Solar', 'Atardecer', 'Horas Luz',
+                'Orient. Óptima', 'Inclin. Óptima',
+                'Tipo Techo',
                 'Área Útil m²', 'Inclinación°', 'Azimut°', 'HSP', 'Irradiancia',
                 'Voltaje Red V', 'Paneles', 'Potencia kWp', 'Generación kWh/mes',
                 'Viabilidad', 'Presupuesto $', 'ROI años',
@@ -473,7 +837,10 @@
             rows.push([
                 v.id, v.fecha, v.hora, v.cliente, v.email, v.telefono, v.direccion, v.gps,
                 v.responsableVisita, v.tipoCliente, v.tarifaCFE, v.numeroServicioCFE,
-                v.consumoBimestral, v.pagoBimestral, v.tipoTecho,
+                v.consumoBimestral, v.pagoBimestral,
+                v.analisisSolar?.amanecer, v.analisisSolar?.cenitSolar, v.analisisSolar?.atardecer,
+                v.analisisSolar?.horasLuz, v.analisisSolar?.orientacionOptima, v.analisisSolar?.inclinacionOptima,
+                v.tipoTecho,
                 v.mediciones?.areaUtil, v.mediciones?.inclinacionTecho, v.mediciones?.azimut,
                 v.mediciones?.horasSolarPico, v.mediciones?.irradiancia,
                 v.mediciones?.voltajeRed, v.mediciones?.panelesEstimados,

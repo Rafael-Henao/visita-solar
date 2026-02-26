@@ -221,6 +221,113 @@
                 <h2>✅ Evaluación del Sitio</h2>
                 <p class="hint">Evalúa las condiciones del sitio para la instalación solar</p>
 
+                <!-- ===== ANÁLISIS SOLAR GPS ===== -->
+                <div class="checklist-category solar-analysis-section">
+                    <h3>🛰️ Análisis Solar y Geolocalización</h3>
+                    <p class="hint">Obtén las coordenadas y el análisis de trayectoria solar</p>
+
+                    <!-- Botón obtener análisis -->
+                    <div class="solar-action-bar">
+                        <button type="button" id="btn-solar-analysis" class="btn btn-primary btn-solar">
+                            🛰️ Obtener Análisis Solar
+                        </button>
+                    </div>
+
+                    <!-- Mapa Satelital -->
+                    <div id="solar-map-container" class="solar-map-container" style="display:none;">
+                        <div class="solar-map-header">
+                            <span>📍 Vista Satelital</span>
+                            <button type="button" id="btn-open-gmaps" class="btn btn-small btn-secondary">Abrir en Google Maps</button>
+                        </div>
+                        <div id="solar-map" class="solar-map">
+                            <iframe id="map-iframe" width="100%" height="250" style="border:0; border-radius: 8px;" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+                        </div>
+                    </div>
+
+                    <!-- Datos GPS -->
+                    <div id="solar-gps-data" class="solar-data-grid" style="display:none;">
+                        <div class="solar-data-card">
+                            <div class="solar-data-icon">📍</div>
+                            <div class="solar-data-info">
+                                <span class="solar-data-label">Coordenadas</span>
+                                <span class="solar-data-value" id="solar-lat">--</span>
+                                <span class="solar-data-value" id="solar-lng">--</span>
+                            </div>
+                        </div>
+                        <div class="solar-data-card">
+                            <div class="solar-data-icon">🎯</div>
+                            <div class="solar-data-info">
+                                <span class="solar-data-label">Precisión GPS</span>
+                                <span class="solar-data-value" id="solar-accuracy">--</span>
+                            </div>
+                        </div>
+                        <div class="solar-data-card">
+                            <div class="solar-data-icon">⬆️</div>
+                            <div class="solar-data-info">
+                                <span class="solar-data-label">Altitud</span>
+                                <span class="solar-data-value" id="solar-altitude">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trayectoria Solar -->
+                    <div id="solar-sun-data" class="solar-sun-section" style="display:none;">
+                        <h4>☀️ Trayectoria Solar del Día</h4>
+
+                        <!-- Canvas brújula solar -->
+                        <div class="solar-compass-wrapper">
+                            <canvas id="solar-compass" width="300" height="300"></canvas>
+                            <p class="hint" style="text-align:center; margin-top:0.3rem;">Brújula solar con trayectoria del sol</p>
+                        </div>
+
+                        <div class="solar-sun-grid">
+                            <div class="sun-time-card sunrise">
+                                <div class="sun-icon">🌅</div>
+                                <div class="sun-info">
+                                    <span class="sun-label">Amanecer</span>
+                                    <span class="sun-value" id="sun-rise-time">--:--</span>
+                                    <span class="sun-detail" id="sun-rise-azimuth">Az: --°</span>
+                                </div>
+                            </div>
+                            <div class="sun-time-card noon">
+                                <div class="sun-icon">☀️</div>
+                                <div class="sun-info">
+                                    <span class="sun-label">Cénit Solar</span>
+                                    <span class="sun-value" id="sun-noon-time">--:--</span>
+                                    <span class="sun-detail" id="sun-noon-elevation">Elevación: --°</span>
+                                </div>
+                            </div>
+                            <div class="sun-time-card sunset">
+                                <div class="sun-icon">🌇</div>
+                                <div class="sun-info">
+                                    <span class="sun-label">Atardecer</span>
+                                    <span class="sun-value" id="sun-set-time">--:--</span>
+                                    <span class="sun-detail" id="sun-set-azimuth">Az: --°</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="solar-extra-grid">
+                            <div class="solar-extra-item">
+                                <span class="solar-extra-label">🕐 Horas de luz</span>
+                                <span class="solar-extra-value" id="sun-daylight">--</span>
+                            </div>
+                            <div class="solar-extra-item">
+                                <span class="solar-extra-label">🧭 Orientación óptima paneles</span>
+                                <span class="solar-extra-value" id="sun-optimal-orientation">--</span>
+                            </div>
+                            <div class="solar-extra-item">
+                                <span class="solar-extra-label">📐 Inclinación óptima</span>
+                                <span class="solar-extra-value" id="sun-optimal-tilt">--</span>
+                            </div>
+                            <div class="solar-extra-item">
+                                <span class="solar-extra-label">🌡️ Posición solar actual</span>
+                                <span class="solar-extra-value" id="sun-current-pos">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="checklist-category">
                     <h3>🏠 Estructura del Techo</h3>
                     <div class="checklist-item">
