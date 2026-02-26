@@ -1,10 +1,13 @@
-const CACHE_NAME = 'visita-solar-v2';
+const CACHE_NAME = 'visita-solar-v3';
 const ASSETS = [
     './',
     './index.html',
     './css/styles.css',
     './js/app.js',
-    './manifest.json'
+    './js/xlsx.full.min.js',
+    './manifest.json',
+    './icons/icon-192.png',
+    './icons/icon-512.png'
 ];
 
 self.addEventListener('install', event => {
