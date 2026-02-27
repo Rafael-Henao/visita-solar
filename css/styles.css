@@ -35,12 +35,12 @@ body {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     z-index: 9999; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    background: linear-gradient(135deg, #0F1D3D 0%, #1B2E5A 40%, #1a3a6a 70%, #0F1D3D 100%);
-    transition: opacity 0.6s ease, transform 0.6s ease;
+    background: #ffffff;
+    transition: opacity 0.5s ease, visibility 0.5s;
     overflow: hidden;
 }
 .splash-screen.hide {
-    opacity: 0; transform: scale(1.05); pointer-events: none;
+    opacity: 0; visibility: hidden; pointer-events: none;
 }
 
 .splash-bg { position: absolute; width: 100%; height: 100%; overflow: hidden; }
@@ -74,28 +74,29 @@ body {
 }
 
 .splash-logo {
-    opacity: 0; transform: translateY(30px) scale(0.8);
-    animation: logoEnter 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards;
+    opacity: 0;
+    animation: logoEntrance 1.2s cubic-bezier(0.23, 1, 0.32, 1) 0.3s forwards;
 }
-@keyframes logoEnter {
-    to { opacity: 1; transform: translateY(0) scale(1); }
+@keyframes logoEntrance {
+    0% { opacity: 0; transform: scale(0.7) translateY(20px); filter: brightness(0); }
+    100% { opacity: 1; transform: scale(1) translateY(0); filter: brightness(1); }
 }
 
 .solix-logo-img {
     width: 280px; height: auto;
-    filter: drop-shadow(0 4px 20px rgba(247,148,29,0.3));
+    filter: drop-shadow(0 4px 15px rgba(247, 148, 29, 0.2));
     animation: logoPulse 3s ease-in-out infinite 1.2s;
 }
 @keyframes logoPulse {
-    0%, 100% { transform: scale(1); filter: drop-shadow(0 4px 15px rgba(247,148,29,0.3)); }
-    50% { transform: scale(1.03); filter: drop-shadow(0 4px 25px rgba(247,148,29,0.5)); }
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 4px 15px rgba(247, 148, 29, 0.2)); }
+    50% { transform: scale(1.03); filter: drop-shadow(0 4px 25px rgba(247, 148, 29, 0.5)); }
 }
 
 .splash-tagline {
     display: flex; gap: 0.6rem; justify-content: center;
 }
 .tagline-word {
-    color: rgba(255,255,255,0.9); font-size: 1.1rem; font-weight: 300;
+    color: #1B2E5A; font-size: 1.1rem; font-weight: 300;
     letter-spacing: 2px; text-transform: uppercase;
     opacity: 0; transform: translateY(20px);
     animation: wordFade 0.6s ease forwards;
@@ -109,20 +110,21 @@ body {
     opacity: 0; animation: fadeIn 0.5s ease 2s forwards;
 }
 .loader-bar {
-    width: 180px; height: 3px; background: rgba(255,255,255,0.15);
-    border-radius: 3px; overflow: hidden; margin-bottom: 0.8rem;
+    width: 200px; height: 4px; background: #f0f0f0;
+    border-radius: 10px; overflow: hidden; margin-bottom: 0.8rem;
 }
 .loader-fill {
     width: 0; height: 100%;
-    background: linear-gradient(90deg, #F7941D, #00A3E0);
-    border-radius: 3px;
-    animation: loadFill 2s ease 2.2s forwards;
+    background: linear-gradient(90deg, #1B2E5A, #F7941D);
+    border-radius: 10px;
+    animation: fillProgress 2.5s ease-in-out 2.2s forwards;
 }
-@keyframes loadFill {
-    to { width: 100%; }
+@keyframes fillProgress {
+    0% { width: 0%; }
+    100% { width: 100%; }
 }
 .splash-loader p {
-    color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 1px;
+    color: #1B2E5A; font-size: 0.75rem; letter-spacing: 1px; margin-top: 8px; font-weight: bold;
 }
 
 .splash-bottom {
@@ -130,7 +132,7 @@ body {
     display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
     opacity: 0; animation: fadeIn 0.5s ease 1.5s forwards;
 }
-.splash-version { color: rgba(255,255,255,0.3); font-size: 0.7rem; letter-spacing: 1px; }
+.splash-version { color: #1B2E5A; font-size: 0.7rem; letter-spacing: 1px; opacity: 0.4; }
 .solar-panel-icon { animation: panelFloat 3s ease-in-out infinite; }
 @keyframes panelFloat {
     0%, 100% { transform: translateY(0); }
