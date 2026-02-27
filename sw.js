@@ -1,4 +1,4 @@
-const CACHE_NAME = 'visita-solar-v9';
+const CACHE_NAME = 'visita-solar-v10';
 const ASSETS = [
     './',
     './index.html',
@@ -7,7 +7,8 @@ const ASSETS = [
     './js/xlsx.full.min.js',
     './manifest.json',
     './icons/icon-192.png',
-    './icons/icon-512.png'
+    './icons/icon-512.png',
+    './icons/logo-solix.png'
 ];
 
 self.addEventListener('install', event => {

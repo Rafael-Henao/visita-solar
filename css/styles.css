@@ -81,15 +81,14 @@ body {
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.solix-logo-svg { width: 300px; height: auto; filter: drop-shadow(0 4px 20px rgba(247,148,29,0.3)); }
-.solix-logo-svg .logo-text-main { fill: white; }
-.solix-logo-svg .logo-text-sas { fill: rgba(255,255,255,0.6); }
-.solix-logo-svg .logo-s {
-    stroke-dasharray: 300; stroke-dashoffset: 300;
-    animation: drawS 1.8s ease-out 0.5s forwards;
+.solix-logo-img {
+    width: 280px; height: auto;
+    filter: drop-shadow(0 4px 20px rgba(247,148,29,0.3));
+    animation: logoPulse 3s ease-in-out infinite 1.2s;
 }
-@keyframes drawS {
-    to { stroke-dashoffset: 0; }
+@keyframes logoPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 4px 15px rgba(247,148,29,0.3)); }
+    50% { transform: scale(1.03); filter: drop-shadow(0 4px 25px rgba(247,148,29,0.5)); }
 }
 
 .splash-tagline {
@@ -153,7 +152,7 @@ body {
     z-index: 100;
     box-shadow: 0 2px 15px rgba(27,46,90,0.25);
 }
-.header-logo { height: 40px; width: auto; }
+.header-logo { height: 40px; width: auto; object-fit: contain; filter: brightness(0) invert(1); }
 
 .btn-icon {
     background: none; border: none; color: white;
