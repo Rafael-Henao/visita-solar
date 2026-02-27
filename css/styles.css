@@ -32,112 +32,89 @@ body {
 
 /* ========== SPLASH SCREEN ========== */
 .splash-screen {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 9999; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
     background: #ffffff;
-    transition: opacity 0.5s ease, visibility 0.5s;
+    display: flex; justify-content: center; align-items: center;
+    z-index: 10000;
+    transition: opacity 0.6s ease;
     overflow: hidden;
-}
-.splash-screen.hide {
-    opacity: 0; visibility: hidden; pointer-events: none;
-}
-
-.splash-bg { position: absolute; width: 100%; height: 100%; overflow: hidden; }
-
-.splash-particles { position: absolute; width: 100%; height: 100%; }
-.particle {
-    position: absolute; border-radius: 50%;
-    animation: floatUp var(--dur) ease-in-out infinite;
-    opacity: 0;
-}
-@keyframes floatUp {
-    0% { opacity: 0; transform: translateY(100vh) scale(0); }
-    20% { opacity: 1; }
-    80% { opacity: 0.8; }
-    100% { opacity: 0; transform: translateY(-20vh) scale(1); }
-}
-
-.splash-rays {
-    position: absolute; width: 100%; height: 100%;
-    background: radial-gradient(ellipse at 50% 60%, rgba(247,148,29,0.12) 0%, transparent 60%);
-    animation: pulseRays 3s ease-in-out infinite;
-}
-@keyframes pulseRays {
-    0%, 100% { opacity: 0.5; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.1); }
 }
 
 .splash-content {
-    position: relative; z-index: 2; text-align: center;
-    display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+    display: flex; flex-direction: column; align-items: center;
 }
 
-.splash-logo {
-    opacity: 0;
-    animation: logoEntrance 1.2s cubic-bezier(0.23, 1, 0.32, 1) 0.3s forwards;
-}
-@keyframes logoEntrance {
-    0% { opacity: 0; transform: scale(0.7) translateY(20px); filter: brightness(0); }
-    100% { opacity: 1; transform: scale(1) translateY(0); filter: brightness(1); }
+/* Logo wrapper con efecto de brillo */
+.logo-wrapper {
+    position: relative;
+    overflow: hidden;
+    padding: 10px;
 }
 
 .solix-logo-img {
-    width: 280px; height: auto;
-    filter: drop-shadow(0 4px 15px rgba(247, 148, 29, 0.2));
-    animation: logoPulse 3s ease-in-out infinite 1.2s;
-}
-@keyframes logoPulse {
-    0%, 100% { transform: scale(1); filter: drop-shadow(0 4px 15px rgba(247, 148, 29, 0.2)); }
-    50% { transform: scale(1.03); filter: drop-shadow(0 4px 25px rgba(247, 148, 29, 0.5)); }
+    width: 300px; height: auto;
+    display: block;
+    opacity: 0; transform: scale(0.9);
+    animation: logoEntrada 0.8s ease-out forwards,
+               latidoSuave 3s ease-in-out infinite 0.8s;
 }
 
-.splash-tagline {
-    display: flex; gap: 0.6rem; justify-content: center;
-}
-.tagline-word {
-    color: #1B2E5A; font-size: 1.1rem; font-weight: 300;
-    letter-spacing: 2px; text-transform: uppercase;
-    opacity: 0; transform: translateY(20px);
-    animation: wordFade 0.6s ease forwards;
-    animation-delay: calc(1s + var(--i) * 0.2s);
-}
-@keyframes wordFade {
-    to { opacity: 1; transform: translateY(0); }
+/* Brillo que recorre el logo */
+.logo-wrapper::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -150%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    transform: skewX(-20deg);
+    animation: brilloPasando 2s infinite 1s;
 }
 
-.splash-loader {
-    opacity: 0; animation: fadeIn 0.5s ease 2s forwards;
+@keyframes logoEntrada {
+    to { opacity: 1; transform: scale(1); }
 }
-.loader-bar {
-    width: 200px; height: 4px; background: #f0f0f0;
-    border-radius: 10px; overflow: hidden; margin-bottom: 0.8rem;
+@keyframes latidoSuave {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+}
+@keyframes brilloPasando {
+    to { left: 150%; }
+}
+
+/* Barra de carga */
+.loader-container {
+    margin-top: 30px; text-align: center;
 }
 .loader-fill {
-    width: 0; height: 100%;
-    background: linear-gradient(90deg, #1B2E5A, #F7941D);
+    width: 200px; height: 3px;
+    background: #eee;
+    position: relative;
     border-radius: 10px;
-    animation: fillProgress 2.5s ease-in-out 2.2s forwards;
+    overflow: hidden;
+    margin: 0 auto;
 }
-@keyframes fillProgress {
-    0% { width: 0%; }
-    100% { width: 100%; }
+.loader-fill::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0;
+    height: 100%; width: 0;
+    background: linear-gradient(90deg, #1B2E5A, #F7941D);
+    animation: cargaBarra 2.5s ease-in-out forwards;
 }
-.splash-loader p {
-    color: #1B2E5A; font-size: 0.75rem; letter-spacing: 1px; margin-top: 8px; font-weight: bold;
+@keyframes cargaBarra {
+    to { width: 100%; }
+}
+.loader-container p {
+    font-size: 10px; letter-spacing: 2px;
+    color: #1B2E5A; margin-top: 8px; font-weight: bold;
 }
 
 .splash-bottom {
-    position: absolute; bottom: 2rem; z-index: 2;
-    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
-    opacity: 0; animation: fadeIn 0.5s ease 1.5s forwards;
+    position: absolute; bottom: 2rem;
+    text-align: center;
 }
-.splash-version { color: #1B2E5A; font-size: 0.7rem; letter-spacing: 1px; opacity: 0.4; }
-.solar-panel-icon { animation: panelFloat 3s ease-in-out infinite; }
-@keyframes panelFloat {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-}
+.splash-version { color: #1B2E5A; font-size: 0.7rem; letter-spacing: 2px; opacity: 0.4; font-weight: bold; }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 

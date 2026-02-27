@@ -15,42 +15,19 @@
 <body>
     <!-- ========== SPLASH SCREEN ========== -->
     <div id="splash-screen" class="splash-screen">
-        <div class="splash-bg">
-            <div class="splash-particles" id="particles"></div>
-            <div class="splash-rays"></div>
-        </div>
         <div class="splash-content">
-            <!-- Logo real Solix SAS -->
-            <div class="splash-logo" id="splash-logo">
+            <!-- Logo real Solix SAS con efecto de brillo -->
+            <div class="logo-wrapper">
                 <img src="icons/logo-solix.png" alt="Solix SAS" class="solix-logo-img">
             </div>
-            <div class="splash-tagline" id="splash-tagline">
-                <span class="tagline-word" style="--i:0">Energía</span>
-                <span class="tagline-word" style="--i:1">Solar</span>
-                <span class="tagline-word" style="--i:2">Inteligente</span>
-            </div>
-            <div class="splash-loader" id="splash-loader">
-                <div class="loader-bar"><div class="loader-fill"></div></div>
-                <p>Cargando aplicación...</p>
+
+            <div class="loader-container">
+                <div class="loader-fill"></div>
+                <p>CARGANDO SISTEMA...</p>
             </div>
         </div>
         <div class="splash-bottom">
-            <div class="solar-panel-icon">
-                <svg viewBox="0 0 60 60" width="40" height="40">
-                    <rect x="5" y="15" width="50" height="35" rx="3" fill="#1B2E5A" opacity="0.8"/>
-                    <line x1="5" y1="27" x2="55" y2="27" stroke="#00A3E0" stroke-width="1"/>
-                    <line x1="5" y1="39" x2="55" y2="39" stroke="#00A3E0" stroke-width="1"/>
-                    <line x1="22" y1="15" x2="22" y2="50" stroke="#00A3E0" stroke-width="1"/>
-                    <line x1="38" y1="15" x2="38" y2="50" stroke="#00A3E0" stroke-width="1"/>
-                    <circle cx="30" cy="8" r="6" fill="#F7941D" opacity="0.9"/>
-                    <line x1="30" y1="0" x2="30" y2="3" stroke="#F7941D" stroke-width="1.5"/>
-                    <line x1="38" y1="4" x2="36" y2="6" stroke="#F7941D" stroke-width="1.5"/>
-                    <line x1="22" y1="4" x2="24" y2="6" stroke="#F7941D" stroke-width="1.5"/>
-                    <line x1="40" y1="8" x2="37" y2="8" stroke="#F7941D" stroke-width="1.5"/>
-                    <line x1="20" y1="8" x2="23" y2="8" stroke="#F7941D" stroke-width="1.5"/>
-                </svg>
-            </div>
-            <p class="splash-version">Visita Técnica v2.0</p>
+            <p class="splash-version">SOLIX SAS v2.0</p>
         </div>
     </div>
 
@@ -731,34 +708,18 @@
     <!-- Splash Screen Script -->
     <script>
     (function() {
-        // Crear partículas flotantes
-        const container = document.getElementById('particles');
-        if (container) {
-            const colors = ['#F7941D', '#00A3E0', '#FFD54F', '#4FC3F7', '#FFA726'];
-            for (let i = 0; i < 25; i++) {
-                const p = document.createElement('div');
-                p.className = 'particle';
-                const size = Math.random() * 6 + 2;
-                p.style.cssText = `
-                    width: ${size}px; height: ${size}px;
-                    left: ${Math.random() * 100}%;
-                    background: ${colors[Math.floor(Math.random() * colors.length)]};
-                    --dur: ${Math.random() * 4 + 3}s;
-                    animation-delay: ${Math.random() * 5}s;
-                `;
-                container.appendChild(p);
-            }
-        }
         // Ocultar splash y mostrar app
-        setTimeout(function() {
-            const splash = document.getElementById('splash-screen');
-            const header = document.getElementById('app-header');
-            if (splash) splash.classList.add('hide');
-            if (header) header.style.display = 'flex';
+        window.addEventListener('load', function() {
+            var splash = document.getElementById('splash-screen');
+            var header = document.getElementById('app-header');
             setTimeout(function() {
-                if (splash) splash.style.display = 'none';
-            }, 700);
-        }, 4200);
+                if (splash) splash.style.opacity = '0';
+                if (header) header.style.display = 'flex';
+                setTimeout(function() {
+                    if (splash) splash.style.display = 'none';
+                }, 600);
+            }, 2500);
+        });
     })();
     </script>
 
