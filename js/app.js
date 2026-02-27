@@ -93,6 +93,12 @@
         document.querySelectorAll('.btn-prev').forEach(btn => {
             btn.addEventListener('click', () => goToStep(parseInt(btn.dataset.prev)));
         });
+        // Click directo en los indicadores de paso
+        document.querySelectorAll('.step-indicator .step').forEach(step => {
+            step.addEventListener('click', () => {
+                goToStep(parseInt(step.dataset.step));
+            });
+        });
     }
 
     function goToStep(step) {
