@@ -49,19 +49,58 @@ body {
 .logo-wrapper {
     position: relative;
     padding: 10px;
+    overflow: hidden;
 }
 
-/* Video animado del logo After Effects */
+/* Video animado del logo After Effects con efectos de brillo */
 .solix-logo-video {
     width: 300px;
     height: auto;
     display: block;
     opacity: 0;
-    animation: logoEntrada 0.8s ease-out forwards;
+    filter: brightness(1);
+    animation: logoEntrada 0.8s ease-out forwards,
+               brilloSutil 3s ease-in-out infinite 1.5s;
+}
+
+/* Brillo que recorre el logo periódicamente */
+.logo-wrapper::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.7),
+        transparent
+    );
+    transform: skewX(-20deg);
+    animation: brilloPasando 3s ease-in-out infinite 1s;
+    pointer-events: none;
 }
 
 @keyframes logoEntrada {
-    to { opacity: 1; }
+    0% { 
+        opacity: 0; 
+        filter: brightness(1.5) saturate(1.3);
+    }
+    100% { 
+        opacity: 1; 
+        filter: brightness(1) saturate(1);
+    }
+}
+
+@keyframes brilloSutil {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.15); }
+}
+
+@keyframes brilloPasando {
+    0% { left: -150%; }
+    100% { left: 150%; }
 }
 
 /* Barra de carga */
