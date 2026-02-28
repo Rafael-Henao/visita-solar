@@ -52,35 +52,27 @@ body {
     padding: 10px;
 }
 
-.solix-logo-img {
+.solix-logo-video {
     width: 300px; height: auto;
     display: block;
     opacity: 0; transform: scale(0.9);
-    animation: logoEntrada 0.8s ease-out forwards,
-               latidoSuave 3s ease-in-out infinite 0.8s;
+    animation: logoEntrada 0.8s ease-out forwards;
 }
 
-/* Brillo que recorre el logo */
-.logo-wrapper::after {
-    content: "";
-    position: absolute;
-    top: 0; left: -150%;
-    width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
-    transform: skewX(-20deg);
-    animation: brilloPasando 2s infinite 1s;
+.solix-logo-img {
+    width: 300px; height: auto;
+    display: block;
 }
+
+/* Brillo desactivado - el video ya tiene su propia animación */
+/* .logo-wrapper::after { ... } */
 
 @keyframes logoEntrada {
     to { opacity: 1; transform: scale(1); }
 }
-@keyframes latidoSuave {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.04); }
-}
-@keyframes brilloPasando {
-    to { left: 150%; }
-}
+/* Animaciones CSS desactivadas - el video tiene su propia animación */
+/* @keyframes latidoSuave { ... } */
+/* @keyframes brilloPasando { ... } */
 
 /* Barra de carga */
 .loader-container {
