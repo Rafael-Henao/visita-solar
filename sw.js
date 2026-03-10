@@ -1,4 +1,4 @@
-const CACHE_NAME = 'visita-solar-v19';
+const CACHE_NAME = 'visita-solar-v20';
 const ASSETS = [
     './',
     './index.html',
