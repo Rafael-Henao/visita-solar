@@ -7,7 +7,7 @@
 
     let currentStep = 1;
     let photos = [];
-    let firmaCtx, firmaCanvas, firmaDibujando = false;
+    let techoPhotos = [];
 
     document.addEventListener('DOMContentLoaded', init);
 
@@ -17,7 +17,7 @@
         initSteps();
         initGPS();
         initPhotos();
-        initFirma();
+        initTechoPhotos();
         initActions();
         initConfig();
         registerServiceWorker();
@@ -503,6 +503,65 @@
         e.target.value = '';
     }
 
+    // ========== FOTOS DEL TECHO ==========
+    function initTechoPhotos() {
+        const techoCamera = document.getElementById('techo-camera-input');
+        const techoGallery = document.getElementById('techo-gallery-input');
+        
+        const btnCamera = document.getElementById('btn-techo-camara');
+        const btnGallery = document.getElementById('btn-techo-galeria');
+        
+        if (btnCamera) btnCamera.addEventListener('click', () => techoCamera.click());
+        if (btnGallery) btnGallery.addEventListener('click', () => techoGallery.click());
+        
+        if (techoCamera) techoCamera.addEventListener('change', handleTechoPhotos);
+        if (techoGallery) techoGallery.addEventListener('change', handleTechoPhotos);
+    }
+
+    function handleTechoPhotos(e) {
+        const files = e.target.files;
+        if (!files.length) return;
+        if (techoPhotos.length + files.length > 5) {
+            showToast('Máximo 5 fotos del techo permitidas', 'error');
+            return;
+        }
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                compressImage(ev.target.result, 800, 0.7, (compressed) => {
+                    techoPhotos.push(compressed);
+                    renderTechoPhotos();
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+        e.target.value = '';
+    }
+
+    function renderTechoPhotos() {
+        const gallery = document.getElementById('techo-gallery');
+        if (!gallery) return;
+        
+        if (techoPhotos.length === 0) {
+            gallery.innerHTML = '<div class="photo-placeholder"><span>🏠</span><p>Sin fotos del techo</p></div>';
+            return;
+        }
+        gallery.innerHTML = techoPhotos.map((photo, i) =>
+            '<div class="photo-item">' +
+            '<img src="' + photo + '" alt="Techo ' + (i + 1) + '">' +
+            '<button class="photo-delete" data-index="' + i + '">✕</button>' +
+            '<span class="photo-number">' + (i + 1) + '/' + techoPhotos.length + '</span>' +
+            '</div>'
+        ).join('');
+
+        gallery.querySelectorAll('.photo-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                techoPhotos.splice(parseInt(btn.dataset.index), 1);
+                renderTechoPhotos();
+            });
+        });
+    }
+
     function compressImage(dataUrl, maxWidth, quality, callback) {
         const img = new Image();
         img.onload = () => {
@@ -538,57 +597,6 @@
             });
         });
     }
-
-    // ========== FIRMA DIGITAL ==========
-    function initFirma() {
-        firmaCanvas = document.getElementById('firma-canvas');
-        firmaCtx = firmaCanvas.getContext('2d');
-
-        function resizeCanvas() {
-            const container = firmaCanvas.parentElement;
-            firmaCanvas.width = container.offsetWidth;
-            firmaCanvas.height = 200;
-            firmaCtx.strokeStyle = '#333';
-            firmaCtx.lineWidth = 2;
-            firmaCtx.lineCap = 'round';
-            firmaCtx.lineJoin = 'round';
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-
-        firmaCanvas.addEventListener('mousedown', startDraw);
-        firmaCanvas.addEventListener('mousemove', draw);
-        firmaCanvas.addEventListener('mouseup', stopDraw);
-        firmaCanvas.addEventListener('mouseleave', stopDraw);
-
-        firmaCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(getTouchPos(e)); });
-        firmaCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(getTouchPos(e)); });
-        firmaCanvas.addEventListener('touchend', stopDraw);
-
-        document.getElementById('btn-limpiar-firma').addEventListener('click', () => {
-            firmaCtx.clearRect(0, 0, firmaCanvas.width, firmaCanvas.height);
-        });
-    }
-
-    function getTouchPos(e) {
-        const rect = firmaCanvas.getBoundingClientRect();
-        const touch = e.touches[0];
-        return { offsetX: touch.clientX - rect.left, offsetY: touch.clientY - rect.top };
-    }
-
-    function startDraw(e) {
-        firmaDibujando = true;
-        firmaCtx.beginPath();
-        firmaCtx.moveTo(e.offsetX, e.offsetY);
-    }
-
-    function draw(e) {
-        if (!firmaDibujando) return;
-        firmaCtx.lineTo(e.offsetX, e.offsetY);
-        firmaCtx.stroke();
-    }
-
-    function stopDraw() { firmaDibujando = false; }
 
     // ========== RECOLECTAR DATOS ==========
     function recolectarDatos() {
@@ -629,7 +637,8 @@
             // Checklist
             checklist: {},
             tipoTecho: document.getElementById('tipo-techo').value,
-            numeroServicioCFE: document.getElementById('numero-servicio-cfe').value,
+            proveedorEnergia: document.getElementById('proveedor-energia') ? document.getElementById('proveedor-energia').value : '',
+            numeroServicio: document.getElementById('numero-servicio') ? document.getElementById('numero-servicio').value : '',
             observacionesChecklist: document.getElementById('observaciones-checklist').value,
 
             // Mediciones
@@ -644,26 +653,20 @@
                 irradiancia: document.getElementById('irradiancia').value,
                 voltajeRed: document.getElementById('voltaje-red').value,
                 capacidadInterruptor: document.getElementById('capacidad-interruptor').value,
-                calibreAcometida: document.getElementById('calibre-acometida').value,
-                panelesEstimados: document.getElementById('paneles-estimados').value,
-                potenciaSistema: document.getElementById('potencia-sistema').value,
-                generacionEstimada: document.getElementById('generacion-estimada').value
+                calibreAcometida: document.getElementById('calibre-acometida').value
             },
             equipoMedicion: document.getElementById('equipo-medicion').value,
             observacionesMediciones: document.getElementById('observaciones-mediciones').value,
 
             // Fotos
             fotos: photos.slice(),
+            fotosTecho: techoPhotos.slice(),
             observacionesFotos: document.getElementById('observaciones-fotos').value,
 
             // Conclusión
             observacionesGenerales: document.getElementById('observaciones-generales').value,
             recomendaciones: document.getElementById('recomendaciones').value,
             viabilidad: document.getElementById('viabilidad').value,
-            presupuestoEstimado: document.getElementById('presupuesto-estimado').value,
-            roiEstimado: document.getElementById('roi-estimado').value,
-            firma: firmaCanvas.toDataURL('image/png'),
-            nombreFirmante: document.getElementById('nombre-firmante').value,
 
             // Metadata
             id: Date.now(),
@@ -719,9 +722,10 @@
             ['Asesor', data.responsableVisita],
             ['Tipo de Cliente', data.tipoCliente],
             ['Tarifa CFE', data.tarifaCFE],
-            ['No. Servicio CFE', data.numeroServicioCFE],
+            ['Proveedor de Energía', data.proveedorEnergia],
+            ['No. de Servicio', data.numeroServicio],
             ['Consumo Bimestral (kWh)', data.consumoBimestral],
-            ['Pago Bimestral ($)', data.pagoBimestral],
+            ['Pago Bimestral (COP)', data.pagoBimestral],
             ['Motivo / Interés', data.motivo],
             [''],
             ['ANÁLISIS SOLAR GPS'],
@@ -742,11 +746,8 @@
             [''],
             ['CONCLUSIONES'],
             ['Viabilidad', data.viabilidad],
-            ['Presupuesto Estimado ($)', data.presupuestoEstimado],
-            ['ROI Estimado (años)', data.roiEstimado],
             ['Observaciones', data.observacionesGenerales],
-            ['Recomendaciones', data.recomendaciones],
-            ['Firmante', data.nombreFirmante]
+            ['Recomendaciones', data.recomendaciones]
         ];
 
         // Hoja 2: Evaluación del Sitio (Checklist)
@@ -762,8 +763,8 @@
             'tierra': 'Sistema de tierra física',
             'protecciones': 'Protecciones eléctricas',
             'ruta-cable': 'Ruta de cableado',
-            'contrato-cfe': 'Contrato de CFE vigente',
-            'acceso-medidor': 'Acceso al medidor de CFE',
+            'contrato-proveedor': 'Contrato vigente con el proveedor',
+            'acceso-medidor': 'Acceso al medidor de energía',
             'acceso-techo': 'Acceso al techo',
             'acceso-vehicular': 'Acceso vehicular'
         };
@@ -792,11 +793,6 @@
             ['Voltaje en Red', data.mediciones.voltajeRed, 'V'],
             ['Interruptor Principal', data.mediciones.capacidadInterruptor, 'A'],
             ['Calibre Acometida', data.mediciones.calibreAcometida, ''],
-            [''],
-            ['PROPUESTA PRELIMINAR'],
-            ['Paneles Estimados', data.mediciones.panelesEstimados, 'pzas'],
-            ['Potencia del Sistema', data.mediciones.potenciaSistema, 'kWp'],
-            ['Generación Estimada', data.mediciones.generacionEstimada, 'kWh/mes'],
             [''],
             ['Equipo de Medición', data.equipoMedicion],
             ['Observaciones', data.observacionesMediciones]
@@ -831,31 +827,30 @@
 
         const rows = [
             ['ID', 'Fecha', 'Hora', 'Cliente', 'Email', 'Teléfono', 'Dirección', 'GPS',
-                'Asesor', 'Tipo Cliente', 'Tarifa CFE', 'No. Servicio CFE',
-                'Consumo Bimestral kWh', 'Pago Bimestral $',
+                'Asesor', 'Tipo Cliente', 'Tarifa CFE', 'Proveedor Energía', 'No. Servicio',
+                'Consumo Bimestral kWh', 'Pago Bimestral COP',
                 'Amanecer', 'Cénit Solar', 'Atardecer', 'Horas Luz',
                 'Orient. Óptima', 'Inclin. Óptima',
                 'Tipo Techo',
                 'Área Útil m²', 'Inclinación°', 'Azimut°', 'HSP', 'Irradiancia',
-                'Voltaje Red V', 'Paneles', 'Potencia kWp', 'Generación kWh/mes',
-                'Viabilidad', 'Presupuesto $', 'ROI años',
-                'Observaciones', 'Recomendaciones', 'Firmante']
+                'Voltaje Red V',
+                'Viabilidad',
+                'Observaciones', 'Recomendaciones']
         ];
 
         visitas.forEach(v => {
             rows.push([
                 v.id, v.fecha, v.hora, v.cliente, v.email, v.telefono, v.direccion, v.gps,
-                v.responsableVisita, v.tipoCliente, v.tarifaCFE, v.numeroServicioCFE,
+                v.responsableVisita, v.tipoCliente, v.tarifaCFE, v.proveedorEnergia, v.numeroServicio,
                 v.consumoBimestral, v.pagoBimestral,
                 v.analisisSolar?.amanecer, v.analisisSolar?.cenitSolar, v.analisisSolar?.atardecer,
                 v.analisisSolar?.horasLuz, v.analisisSolar?.orientacionOptima, v.analisisSolar?.inclinacionOptima,
                 v.tipoTecho,
                 v.mediciones?.areaUtil, v.mediciones?.inclinacionTecho, v.mediciones?.azimut,
                 v.mediciones?.horasSolarPico, v.mediciones?.irradiancia,
-                v.mediciones?.voltajeRed, v.mediciones?.panelesEstimados,
-                v.mediciones?.potenciaSistema, v.mediciones?.generacionEstimada,
-                v.viabilidad, v.presupuestoEstimado, v.roiEstimado,
-                v.observacionesGenerales, v.recomendaciones, v.nombreFirmante
+                v.mediciones?.voltajeRed,
+                v.viabilidad,
+                v.observacionesGenerales, v.recomendaciones
             ]);
         });
 

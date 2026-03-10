@@ -16,12 +16,9 @@
     <!-- ========== SPLASH SCREEN ========== -->
     <div id="splash-screen" class="splash-screen">
         <div class="splash-content">
-            <!-- Logo animado After Effects -->
+            <!-- Logo real Solix SAS con efecto de brillo -->
             <div class="logo-wrapper">
-                <video autoplay muted playsinline loop class="solix-logo-video">
-                    <source src="icons/logo-solix-animado.mp4" type="video/mp4">
-                    <img src="icons/logo-solix.png" alt="Solix SAS">
-                </video>
+                <img src="icons/logo-solix.png" alt="Solix SAS" class="solix-logo-img">
             </div>
 
             <div class="loader-container">
@@ -73,7 +70,6 @@
                 <div class="step" data-step="2"><span>2</span><small>Sitio</small></div>
                 <div class="step" data-step="3"><span>3</span><small>Mediciones</small></div>
                 <div class="step" data-step="4"><span>4</span><small>Fotos</small></div>
-                <div class="step" data-step="5"><span>5</span><small>Firma</small></div>
             </div>
 
             <!-- PASO 1: Datos del Cliente y Sitio -->
@@ -148,8 +144,8 @@
                     <input type="number" id="consumo-bimestral" step="1" placeholder="Ej: 850">
                 </div>
                 <div class="form-group">
-                    <label for="pago-bimestral">Pago Bimestral Promedio ($MXN)</label>
-                    <input type="number" id="pago-bimestral" step="0.01" placeholder="Ej: 1500.00">
+                    <label for="pago-bimestral">Pago Bimestral Promedio (COP)</label>
+                    <input type="number" id="pago-bimestral" step="0.01" placeholder="Ej: 350000">
                 </div>
                 <div class="form-group">
                     <label for="motivo">Motivo / Interés del Cliente</label>
@@ -314,6 +310,24 @@
                             <option value="otro">Otro</option>
                         </select>
                     </div>
+
+                    <!-- Fotos del techo -->
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--primary);">📸 Fotos de la Estructura del Techo</label>
+                        <p class="hint" style="margin-bottom: 0.5rem;">Captura fotos del estado del techo, tipo de material y estructura</p>
+                        <div style="display: flex; gap: 0.6rem; margin-bottom: 0.8rem;">
+                            <button type="button" id="btn-techo-camara" class="btn btn-primary btn-small">📸 Tomar Foto</button>
+                            <button type="button" id="btn-techo-galeria" class="btn btn-secondary btn-small">📁 Galería</button>
+                        </div>
+                        <div id="techo-gallery" class="photo-gallery" style="min-height: 120px;">
+                            <div class="photo-placeholder">
+                                <span>🏠</span>
+                                <p>Sin fotos del techo</p>
+                            </div>
+                        </div>
+                        <input type="file" id="techo-camera-input" accept="image/*" capture="environment" style="display:none">
+                        <input type="file" id="techo-gallery-input" accept="image/*" multiple style="display:none">
+                    </div>
                 </div>
 
                 <div class="checklist-category">
@@ -397,18 +411,22 @@
                 </div>
 
                 <div class="checklist-category">
-                    <h3>📋 Interconexión CFE</h3>
+                    <h3>⚡ Proveedor de Energía</h3>
+                    <div class="form-group" style="margin-top: 0.5rem;">
+                        <label for="proveedor-energia">Nombre del Proveedor de Energía</label>
+                        <input type="text" id="proveedor-energia" placeholder="Ej: EPM, Codensa, Celsia, etc.">
+                    </div>
                     <div class="checklist-item">
-                        <span>Contrato de CFE vigente</span>
+                        <span>Contrato vigente con el proveedor</span>
                         <div class="check-options">
-                            <label class="check-option bien"><input type="radio" name="check-contrato-cfe" value="bien"><span>✓</span></label>
-                            <label class="check-option regular"><input type="radio" name="check-contrato-cfe" value="regular"><span>~</span></label>
-                            <label class="check-option mal"><input type="radio" name="check-contrato-cfe" value="mal"><span>✗</span></label>
-                            <label class="check-option na"><input type="radio" name="check-contrato-cfe" value="na"><span>N/A</span></label>
+                            <label class="check-option bien"><input type="radio" name="check-contrato-proveedor" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-contrato-proveedor" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-contrato-proveedor" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-contrato-proveedor" value="na"><span>N/A</span></label>
                         </div>
                     </div>
                     <div class="checklist-item">
-                        <span>Acceso al medidor de CFE</span>
+                        <span>Acceso al medidor de energía</span>
                         <div class="check-options">
                             <label class="check-option bien"><input type="radio" name="check-acceso-medidor" value="bien"><span>✓</span></label>
                             <label class="check-option regular"><input type="radio" name="check-acceso-medidor" value="regular"><span>~</span></label>
@@ -417,8 +435,8 @@
                         </div>
                     </div>
                     <div class="form-group" style="margin-top: 0.5rem;">
-                        <label for="numero-servicio-cfe">No. de Servicio CFE (RMU)</label>
-                        <input type="text" id="numero-servicio-cfe" placeholder="Ej: 123 456 789 012">
+                        <label for="numero-servicio">No. de Servicio / Cuenta</label>
+                        <input type="text" id="numero-servicio" placeholder="Número de cuenta o contrato">
                     </div>
                 </div>
 
@@ -521,21 +539,7 @@
                         </div>
                     </div>
 
-                    <div class="medicion-card">
-                        <h4>🔋 Propuesta Preliminar</h4>
-                        <div class="form-group">
-                            <label for="paneles-estimados">Paneles Estimados</label>
-                            <input type="number" id="paneles-estimados" step="1" placeholder="8">
-                        </div>
-                        <div class="form-group">
-                            <label for="potencia-sistema">Potencia del Sistema (kWp)</label>
-                            <input type="number" id="potencia-sistema" step="0.01" placeholder="3.52">
-                        </div>
-                        <div class="form-group">
-                            <label for="generacion-estimada">Generación Estimada (kWh/mes)</label>
-                            <input type="number" id="generacion-estimada" step="1" placeholder="550">
-                        </div>
-                    </div>
+
                 </div>
 
                 <div class="form-group" style="margin-top: 1rem;">
@@ -554,13 +558,13 @@
                 </div>
             </section>
 
-            <!-- PASO 4: Fotos / Evidencias -->
+            <!-- PASO 4 (FINAL): Conclusión -->
             <section id="step-4" class="form-step">
                 <h2>📷 Evidencia Fotográfica</h2>
                 <p class="hint">Fotos del techo, medidor, tablero, sombras (máx. 10)</p>
 
                 <div class="photo-labels">
-                    <p class="hint"><strong>Fotos sugeridas:</strong> 1) Techo completo, 2) Medidor CFE, 3) Centro de carga, 4) Ruta de cableado, 5) Sombras/obstáculos, 6) Recibo de luz</p>
+                    <p class="hint"><strong>Fotos sugeridas:</strong> 1) Techo completo, 2) Medidor, 3) Centro de carga, 4) Ruta de cableado, 5) Sombras/obstáculos, 6) Recibo de luz</p>
                 </div>
 
                 <div class="photo-controls">
@@ -586,15 +590,9 @@
                     <textarea id="observaciones-fotos" rows="3" placeholder="Describe lo que muestra cada foto..."></textarea>
                 </div>
 
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary btn-prev" data-prev="3">← Anterior</button>
-                    <button type="button" class="btn btn-primary btn-next" data-next="5">Siguiente →</button>
-                </div>
-            </section>
+                <hr style="margin: 1.5rem 0; border: none; border-top: 2px solid var(--border);">
 
-            <!-- PASO 5: Conclusión y Firma -->
-            <section id="step-5" class="form-step">
-                <h2>✍️ Conclusión y Firma</h2>
+                <h3 style="color: var(--primary); margin-bottom: 1rem;">📝 Conclusión de la Visita</h3>
 
                 <div class="form-group">
                     <label for="observaciones-generales">Observaciones Generales</label>
@@ -618,33 +616,8 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label for="presupuesto-estimado">Presupuesto Estimado ($MXN)</label>
-                    <input type="number" id="presupuesto-estimado" step="100" placeholder="Ej: 85000">
-                </div>
-
-                <div class="form-group">
-                    <label for="roi-estimado">ROI Estimado (años)</label>
-                    <input type="number" id="roi-estimado" step="0.1" placeholder="Ej: 3.5">
-                </div>
-
-                <div class="firma-section">
-                    <h3>Firma del Cliente</h3>
-                    <p class="hint">El cliente firma aceptando que se realizó la visita técnica</p>
-                    <div class="firma-container">
-                        <canvas id="firma-canvas" width="350" height="200"></canvas>
-                    </div>
-                    <div class="firma-actions">
-                        <button type="button" id="btn-limpiar-firma" class="btn btn-secondary btn-small">🗑️ Limpiar</button>
-                    </div>
-                    <div class="form-group">
-                        <label for="nombre-firmante">Nombre del Cliente (quien firma)</label>
-                        <input type="text" id="nombre-firmante" placeholder="Nombre completo">
-                    </div>
-                </div>
-
                 <div class="form-actions final-actions">
-                    <button type="button" class="btn btn-secondary btn-prev" data-prev="4">← Anterior</button>
+                    <button type="button" class="btn btn-secondary btn-prev" data-prev="3">← Anterior</button>
                     <button type="button" id="btn-guardar" class="btn btn-success">💾 Guardar Visita</button>
                     <button type="button" id="btn-excel" class="btn btn-primary">📊 Descargar Excel</button>
                 </div>
