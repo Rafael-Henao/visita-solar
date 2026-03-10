@@ -131,7 +131,12 @@ body {
     z-index: 100;
     box-shadow: 0 2px 15px rgba(27,46,90,0.25);
 }
-.header-logo { height: 40px; width: auto; object-fit: contain; }
+.header-logo {
+    height: 40px; width: auto; object-fit: contain;
+    background: rgba(255,255,255,0.92);
+    padding: 4px 12px;
+    border-radius: 8px;
+}
 
 .btn-icon {
     background: none; border: none; color: white;
