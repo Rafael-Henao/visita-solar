@@ -270,11 +270,15 @@ body {
 .check-option.mal input:checked ~ span { background: #ffebee; border-color: var(--danger); color: var(--danger); }
 .check-option.na input:checked ~ span { background: #f0f0f0; border-color: #999; color: #999; }
 
+/* ========== BORDES ALTERNADOS AZUL / NARANJA ========== */
+.card-sky { border-left: 4px solid var(--sky) !important; }
+.card-accent { border-left: 4px solid var(--accent) !important; }
+
 /* ========== MEDICIONES ========== */
 .mediciones-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
 .medicion-card {
     background: white; border-radius: var(--radius); padding: 1rem; box-shadow: var(--shadow);
-    border-top: 3px solid var(--sky);
+    border-left: 4px solid var(--sky);
 }
 .medicion-card h4 {
     margin-bottom: 0.8rem; color: var(--primary); font-size: 0.95rem;
@@ -337,6 +341,7 @@ body {
 .config-section {
     background: white; border-radius: var(--radius); padding: 1.2rem;
     margin-bottom: 1rem; box-shadow: var(--shadow);
+    border-left: 4px solid var(--sky);
 }
 .config-section h3 { margin-bottom: 0.6rem; color: var(--primary); }
 .config-section p { font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.5rem; }
@@ -365,7 +370,6 @@ body {
 }
 
 /* ========== ANÁLISIS SOLAR GPS ========== */
-.solar-analysis-section { border-left: 4px solid var(--sky) !important; }
 
 .solar-action-bar {
     display: flex; justify-content: center; margin: 1rem 0;
