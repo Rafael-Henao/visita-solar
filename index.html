@@ -5,37 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1B2E5A">
     <meta name="description" content="Solix SAS - Visitas Técnicas Paneles Solares">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>Solix SAS - Visita Técnica</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <link rel="stylesheet" href="css/styles.css?v=25">
+    <link rel="stylesheet" href="css/styles.css">
     <!-- SheetJS para exportar Excel (local para funcionar offline) -->
     <script src="js/xlsx.full.min.js"></script>
 </head>
 <body>
-    <!-- ========== PANTALLA DE PIN ========== -->
-    <div id="pin-screen" class="pin-screen">
-        <div class="pin-content">
-            <div class="pin-logo-wrapper">
-                <img src="icons/logo-solix.png" alt="Solix SAS" class="pin-logo">
-            </div>
-            <h2 class="pin-title">🔒 Acceso Restringido</h2>
-            <p class="pin-subtitle">Ingresa el PIN de acceso diario</p>
-            <div class="pin-inputs" id="pin-inputs">
-                <input type="tel" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric" autocomplete="off">
-                <input type="tel" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric" autocomplete="off">
-                <input type="tel" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric" autocomplete="off">
-                <input type="tel" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric" autocomplete="off">
-            </div>
-            <p id="pin-error" class="pin-error" style="display:none;">PIN incorrecto</p>
-            <button type="button" id="btn-pin-submit" class="btn btn-primary pin-btn">Ingresar</button>
-            <p class="pin-hint">Uso exclusivo personal autorizado Solix SAS</p>
-        </div>
-    </div>
-
     <!-- ========== SPLASH SCREEN ========== -->
     <div id="splash-screen" class="splash-screen">
         <div class="splash-content">
@@ -685,19 +662,6 @@
         <!-- VISTA: Configuración -->
         <div id="view-configuracion" class="view">
             <h2>⚙️ Configuración</h2>
-            <div class="config-section card-sky">
-                <h3>🔒 PIN de Acceso</h3>
-                <p class="hint">Cambia el PIN de acceso diario. Se pedirá cada día al abrir la app.</p>
-                <div class="form-group">
-                    <label for="config-pin-actual">PIN Actual</label>
-                    <input type="password" id="config-pin-actual" placeholder="PIN actual" maxlength="6" inputmode="numeric">
-                </div>
-                <div class="form-group">
-                    <label for="config-pin-nuevo">Nuevo PIN (4-6 dígitos)</label>
-                    <input type="password" id="config-pin-nuevo" placeholder="Nuevo PIN" maxlength="6" inputmode="numeric">
-                </div>
-                <button type="button" id="btn-cambiar-pin" class="btn btn-primary">🔑 Cambiar PIN</button>
-            </div>
             <div class="config-section card-accent">
                 <h3>📱 Información de la App</h3>
                 <p>Versión: 2.1.0 — Solix SAS</p>
@@ -711,183 +675,45 @@
     <!-- Toast de notificaciones -->
     <div id="toast" class="toast"></div>
 
-    <!-- PIN + Splash Screen Script v25 -->
+    <!-- Splash Screen Script -->
     <script>
     (function() {
-        var DEFAULT_PIN = '2026';
-        var pinScreen = document.getElementById('pin-screen');
-        var splash = document.getElementById('splash-screen');
-        var header = document.getElementById('app-header');
-
-        console.log('[PIN] Script iniciado v25');
-        console.log('[PIN] pinScreen:', !!pinScreen);
-        console.log('[PIN] splash:', !!splash);
-
-        // IMPORTANTE: Limpiar fecha del PIN para testing
-        // (descomentar si nunca aparece el PIN)
-        // localStorage.removeItem('solix_pin_fecha');
-
-        // Verificar si ya se desbloqueó hoy
-        var hoy = new Date().toISOString().split('T')[0];
-        var ultimoAcceso = localStorage.getItem('solix_pin_fecha');
-        console.log('[PIN] Hoy:', hoy, 'Ultimo acceso:', ultimoAcceso);
-
-        // Verificar que los elementos existen
-        if (!pinScreen) {
-            console.error('[PIN] ERROR: No se encontró #pin-screen. Version vieja en cache.');
-            document.title = 'ERROR: Cache vieja - Limpia datos del sitio';
-            return;
-        }
-
-        if (ultimoAcceso === hoy) {
-            // Ya se desbloqueó hoy -> ocultar PIN, mostrar splash
-            console.log('[PIN] Ya desbloqueado hoy, saltando PIN');
-            pinScreen.style.display = 'none';
-            iniciarSplash();
-        } else {
-            // Mostrar pantalla de PIN, ocultar splash
-            console.log('[PIN] Mostrando pantalla PIN');
-            splash.style.display = 'none';
-            pinScreen.style.display = 'flex';
-            initPinScreen();
-        }
-
-        function initPinScreen() {
-            var digits = document.querySelectorAll('.pin-digit');
-            var errorMsg = document.getElementById('pin-error');
-            var btnSubmit = document.getElementById('btn-pin-submit');
-
-            // Auto-focus primer campo
-            digits[0].focus();
-
-            // Navegar entre campos al escribir
-            digits.forEach(function(input, idx) {
-                input.addEventListener('input', function() {
-                    this.value = this.value.replace(/[^0-9]/g, '');
-                    if (this.value && idx < digits.length - 1) {
-                        digits[idx + 1].focus();
-                    }
-                    if (this.value && idx === digits.length - 1) {
-                        verificarPin();
-                    }
-                });
-                input.addEventListener('keydown', function(e) {
-                    if (e.key === 'Backspace' && !this.value && idx > 0) {
-                        digits[idx - 1].focus();
-                        digits[idx - 1].value = '';
-                    }
-                    if (e.key === 'Enter') {
-                        verificarPin();
-                    }
-                });
-            });
-
-            btnSubmit.addEventListener('click', verificarPin);
-
-            function verificarPin() {
-                var pin = '';
-                digits.forEach(function(d) { pin += d.value; });
-
-                var pinGuardado = localStorage.getItem('solix_pin') || DEFAULT_PIN;
-
-                if (pin === pinGuardado) {
-                    // PIN correcto -> guardar fecha de hoy
-                    localStorage.setItem('solix_pin_fecha', hoy);
-                    pinScreen.style.opacity = '0';
-                    setTimeout(function() {
-                        pinScreen.style.display = 'none';
-                        splash.style.display = 'flex';
-                        iniciarSplash();
-                    }, 500);
-                } else {
-                    // PIN incorrecto
-                    errorMsg.style.display = 'block';
-                    errorMsg.textContent = 'PIN incorrecto. Intenta de nuevo.';
-                    digits.forEach(function(d) {
-                        d.value = '';
-                        d.classList.add('error');
-                    });
-                    setTimeout(function() {
-                        digits.forEach(function(d) { d.classList.remove('error'); });
-                    }, 500);
-                    digits[0].focus();
-                }
-            }
-        }
-
-        function iniciarSplash() {
-            window.addEventListener('load', function() {
+        // Ocultar splash y mostrar app
+        window.addEventListener('load', function() {
+            var splash = document.getElementById('splash-screen');
+            var header = document.getElementById('app-header');
+            setTimeout(function() {
+                if (splash) splash.style.opacity = '0';
+                if (header) header.style.display = 'flex';
                 setTimeout(function() {
-                    if (splash) splash.style.opacity = '0';
-                    if (header) header.style.display = 'flex';
-                    setTimeout(function() {
-                        if (splash) splash.style.display = 'none';
-                    }, 600);
-                }, 2500);
-            });
-            // Si ya cargó
-            if (document.readyState === 'complete') {
-                setTimeout(function() {
-                    if (splash) splash.style.opacity = '0';
-                    if (header) header.style.display = 'flex';
-                    setTimeout(function() {
-                        if (splash) splash.style.display = 'none';
-                    }, 600);
-                }, 2500);
-            }
-        }
+                    if (splash) splash.style.display = 'none';
+                }, 600);
+            }, 2500);
+        });
     })();
     </script>
 
     <!-- Scripts -->
-    <script src="js/app.js?v=25"></script>
+    <script src="js/app.js"></script>
 
-    <!-- Forzar limpieza de cache y actualización del Service Worker -->
+    <!-- Service Worker -->
     <script>
-    (function() {
-        // 1. Limpiar TODOS los caches viejos
-        if ('caches' in window) {
-            caches.keys().then(function(names) {
-                names.forEach(function(name) {
-                    if (name !== 'visita-solar-v25') {
-                        console.log('[SW] Borrando cache viejo:', name);
-                        caches.delete(name);
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(function(reg) {
+            reg.update();
+            reg.addEventListener('updatefound', function() {
+                var newSW = reg.installing;
+                newSW.addEventListener('statechange', function() {
+                    if (newSW.state === 'activated') {
+                        window.location.reload();
                     }
                 });
             });
-        }
-
-        // 2. Registrar/actualizar Service Worker
-        if ('serviceWorker' in navigator) {
-            // Desregistrar SWs anteriores y registrar nuevo
-            navigator.serviceWorker.getRegistrations().then(function(regs) {
-                var needsReload = false;
-                regs.forEach(function(reg) {
-                    if (reg.active && reg.active.scriptURL && !reg.active.scriptURL.includes('sw.js')) {
-                        reg.unregister();
-                        needsReload = true;
-                    }
-                });
-                // Registrar el nuevo
-                navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function(reg) {
-                    console.log('[SW] Registrado v25');
-                    reg.update();
-                    reg.addEventListener('updatefound', function() {
-                        var newSW = reg.installing;
-                        newSW.addEventListener('statechange', function() {
-                            if (newSW.state === 'activated') {
-                                window.location.reload();
-                            }
-                        });
-                    });
-                });
-            });
-
-            navigator.serviceWorker.addEventListener('controllerchange', function() {
-                window.location.reload();
-            });
-        }
-    })();
+        });
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+            window.location.reload();
+        });
+    }
     </script>
 </body>
 </html>

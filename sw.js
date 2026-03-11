@@ -1,9 +1,9 @@
-const CACHE_NAME = 'visita-solar-v25';
+const CACHE_NAME = 'visita-solar-v26';
 const ASSETS = [
     './',
     './index.html',
-    './css/styles.css?v=25',
-    './js/app.js?v=25',
+    './css/styles.css',
+    './js/app.js',
     './js/xlsx.full.min.js',
     './manifest.json',
     './icons/icon-192.png',
