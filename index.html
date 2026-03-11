@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1B2E5A">
     <meta name="description" content="Solix SAS - Visitas Técnicas Paneles Solares">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Solix SAS - Visita Técnica</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <link rel="stylesheet" href="css/styles.css?v=24">
+    <link rel="stylesheet" href="css/styles.css?v=25">
     <!-- SheetJS para exportar Excel (local para funcionar offline) -->
     <script src="js/xlsx.full.min.js"></script>
 </head>
@@ -708,7 +711,7 @@
     <!-- Toast de notificaciones -->
     <div id="toast" class="toast"></div>
 
-    <!-- PIN + Splash Screen Script v24 -->
+    <!-- PIN + Splash Screen Script v25 -->
     <script>
     (function() {
         var DEFAULT_PIN = '2026';
@@ -716,14 +719,25 @@
         var splash = document.getElementById('splash-screen');
         var header = document.getElementById('app-header');
 
-        console.log('[PIN] Script iniciado v24');
+        console.log('[PIN] Script iniciado v25');
         console.log('[PIN] pinScreen:', !!pinScreen);
         console.log('[PIN] splash:', !!splash);
+
+        // IMPORTANTE: Limpiar fecha del PIN para testing
+        // (descomentar si nunca aparece el PIN)
+        // localStorage.removeItem('solix_pin_fecha');
 
         // Verificar si ya se desbloqueó hoy
         var hoy = new Date().toISOString().split('T')[0];
         var ultimoAcceso = localStorage.getItem('solix_pin_fecha');
         console.log('[PIN] Hoy:', hoy, 'Ultimo acceso:', ultimoAcceso);
+
+        // Verificar que los elementos existen
+        if (!pinScreen) {
+            console.error('[PIN] ERROR: No se encontró #pin-screen. Version vieja en cache.');
+            document.title = 'ERROR: Cache vieja - Limpia datos del sitio';
+            return;
+        }
 
         if (ultimoAcceso === hoy) {
             // Ya se desbloqueó hoy -> ocultar PIN, mostrar splash
@@ -826,29 +840,54 @@
     </script>
 
     <!-- Scripts -->
-    <script src="js/app.js?v=24"></script>
+    <script src="js/app.js?v=25"></script>
 
-    <!-- Forzar actualización del Service Worker -->
+    <!-- Forzar limpieza de cache y actualización del Service Worker -->
     <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(function(reg) {
-            // Verificar actualizaciones inmediatamente
-            reg.update();
-            reg.addEventListener('updatefound', function() {
-                var newSW = reg.installing;
-                newSW.addEventListener('statechange', function() {
-                    if (newSW.state === 'activated') {
-                        // Nueva versión activada, recargar
-                        window.location.reload();
+    (function() {
+        // 1. Limpiar TODOS los caches viejos
+        if ('caches' in window) {
+            caches.keys().then(function(names) {
+                names.forEach(function(name) {
+                    if (name !== 'visita-solar-v25') {
+                        console.log('[SW] Borrando cache viejo:', name);
+                        caches.delete(name);
                     }
                 });
             });
-        });
-        // Si el SW toma control, recargar para usar la nueva versión
-        navigator.serviceWorker.addEventListener('controllerchange', function() {
-            window.location.reload();
-        });
-    }
+        }
+
+        // 2. Registrar/actualizar Service Worker
+        if ('serviceWorker' in navigator) {
+            // Desregistrar SWs anteriores y registrar nuevo
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+                var needsReload = false;
+                regs.forEach(function(reg) {
+                    if (reg.active && reg.active.scriptURL && !reg.active.scriptURL.includes('sw.js')) {
+                        reg.unregister();
+                        needsReload = true;
+                    }
+                });
+                // Registrar el nuevo
+                navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function(reg) {
+                    console.log('[SW] Registrado v25');
+                    reg.update();
+                    reg.addEventListener('updatefound', function() {
+                        var newSW = reg.installing;
+                        newSW.addEventListener('statechange', function() {
+                            if (newSW.state === 'activated') {
+                                window.location.reload();
+                            }
+                        });
+                    });
+                });
+            });
+
+            navigator.serviceWorker.addEventListener('controllerchange', function() {
+                window.location.reload();
+            });
+        }
+    })();
     </script>
 </body>
 </html>
