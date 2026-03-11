@@ -8,7 +8,7 @@
     <title>Solix SAS - Visita Técnica</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css?v=24">
     <!-- SheetJS para exportar Excel (local para funcionar offline) -->
     <script src="js/xlsx.full.min.js"></script>
 </head>
@@ -708,7 +708,7 @@
     <!-- Toast de notificaciones -->
     <div id="toast" class="toast"></div>
 
-    <!-- PIN + Splash Screen Script -->
+    <!-- PIN + Splash Screen Script v24 -->
     <script>
     (function() {
         var DEFAULT_PIN = '2026';
@@ -716,17 +716,25 @@
         var splash = document.getElementById('splash-screen');
         var header = document.getElementById('app-header');
 
+        console.log('[PIN] Script iniciado v24');
+        console.log('[PIN] pinScreen:', !!pinScreen);
+        console.log('[PIN] splash:', !!splash);
+
         // Verificar si ya se desbloqueó hoy
         var hoy = new Date().toISOString().split('T')[0];
         var ultimoAcceso = localStorage.getItem('solix_pin_fecha');
+        console.log('[PIN] Hoy:', hoy, 'Ultimo acceso:', ultimoAcceso);
 
         if (ultimoAcceso === hoy) {
             // Ya se desbloqueó hoy -> ocultar PIN, mostrar splash
+            console.log('[PIN] Ya desbloqueado hoy, saltando PIN');
             pinScreen.style.display = 'none';
             iniciarSplash();
         } else {
             // Mostrar pantalla de PIN, ocultar splash
+            console.log('[PIN] Mostrando pantalla PIN');
             splash.style.display = 'none';
+            pinScreen.style.display = 'flex';
             initPinScreen();
         }
 
@@ -818,7 +826,7 @@
     </script>
 
     <!-- Scripts -->
-    <script src="js/app.js"></script>
+    <script src="js/app.js?v=24"></script>
 
     <!-- Forzar actualización del Service Worker -->
     <script>
