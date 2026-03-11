@@ -13,6 +13,26 @@
     <script src="js/xlsx.full.min.js"></script>
 </head>
 <body>
+    <!-- ========== PANTALLA DE PIN ========== -->
+    <div id="pin-screen" class="pin-screen">
+        <div class="pin-content">
+            <div class="pin-logo-wrapper">
+                <img src="icons/logo-solix.png" alt="Solix SAS" class="pin-logo">
+            </div>
+            <h2 class="pin-title">🔒 Acceso Restringido</h2>
+            <p class="pin-subtitle">Ingresa el PIN de acceso diario</p>
+            <div class="pin-inputs" id="pin-inputs">
+                <input type="tel" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric" autocomplete="off">
+                <input type="tel" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric" autocomplete="off">
+                <input type="tel" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric" autocomplete="off">
+                <input type="tel" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric" autocomplete="off">
+            </div>
+            <p id="pin-error" class="pin-error" style="display:none;">PIN incorrecto</p>
+            <button type="button" id="btn-pin-submit" class="btn btn-primary pin-btn">Ingresar</button>
+            <p class="pin-hint">Uso exclusivo personal autorizado Solix SAS</p>
+        </div>
+    </div>
+
     <!-- ========== SPLASH SCREEN ========== -->
     <div id="splash-screen" class="splash-screen">
         <div class="splash-content">
@@ -663,7 +683,20 @@
         <div id="view-configuracion" class="view">
             <h2>⚙️ Configuración</h2>
             <div class="config-section card-sky">
-                <h3>�📱 Información de la App</h3>
+                <h3>🔒 PIN de Acceso</h3>
+                <p class="hint">Cambia el PIN de acceso diario. Se pedirá cada día al abrir la app.</p>
+                <div class="form-group">
+                    <label for="config-pin-actual">PIN Actual</label>
+                    <input type="password" id="config-pin-actual" placeholder="PIN actual" maxlength="6" inputmode="numeric">
+                </div>
+                <div class="form-group">
+                    <label for="config-pin-nuevo">Nuevo PIN (4-6 dígitos)</label>
+                    <input type="password" id="config-pin-nuevo" placeholder="Nuevo PIN" maxlength="6" inputmode="numeric">
+                </div>
+                <button type="button" id="btn-cambiar-pin" class="btn btn-primary">🔑 Cambiar PIN</button>
+            </div>
+            <div class="config-section card-accent">
+                <h3>📱 Información de la App</h3>
                 <p>Versión: 2.1.0 — Solix SAS</p>
                 <p>Visitas guardadas: <span id="total-visitas">0</span></p>
                 <button type="button" id="btn-borrar-todo" class="btn btn-danger">🗑️ Borrar Todos los Datos</button>
@@ -675,21 +708,112 @@
     <!-- Toast de notificaciones -->
     <div id="toast" class="toast"></div>
 
-    <!-- Splash Screen Script -->
+    <!-- PIN + Splash Screen Script -->
     <script>
     (function() {
-        // Ocultar splash y mostrar app
-        window.addEventListener('load', function() {
-            var splash = document.getElementById('splash-screen');
-            var header = document.getElementById('app-header');
-            setTimeout(function() {
-                if (splash) splash.style.opacity = '0';
-                if (header) header.style.display = 'flex';
+        var DEFAULT_PIN = '2026';
+        var pinScreen = document.getElementById('pin-screen');
+        var splash = document.getElementById('splash-screen');
+        var header = document.getElementById('app-header');
+
+        // Verificar si ya se desbloqueó hoy
+        var hoy = new Date().toISOString().split('T')[0];
+        var ultimoAcceso = localStorage.getItem('solix_pin_fecha');
+
+        if (ultimoAcceso === hoy) {
+            // Ya se desbloqueó hoy -> ocultar PIN, mostrar splash
+            pinScreen.style.display = 'none';
+            iniciarSplash();
+        } else {
+            // Mostrar pantalla de PIN, ocultar splash
+            splash.style.display = 'none';
+            initPinScreen();
+        }
+
+        function initPinScreen() {
+            var digits = document.querySelectorAll('.pin-digit');
+            var errorMsg = document.getElementById('pin-error');
+            var btnSubmit = document.getElementById('btn-pin-submit');
+
+            // Auto-focus primer campo
+            digits[0].focus();
+
+            // Navegar entre campos al escribir
+            digits.forEach(function(input, idx) {
+                input.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    if (this.value && idx < digits.length - 1) {
+                        digits[idx + 1].focus();
+                    }
+                    if (this.value && idx === digits.length - 1) {
+                        verificarPin();
+                    }
+                });
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && !this.value && idx > 0) {
+                        digits[idx - 1].focus();
+                        digits[idx - 1].value = '';
+                    }
+                    if (e.key === 'Enter') {
+                        verificarPin();
+                    }
+                });
+            });
+
+            btnSubmit.addEventListener('click', verificarPin);
+
+            function verificarPin() {
+                var pin = '';
+                digits.forEach(function(d) { pin += d.value; });
+
+                var pinGuardado = localStorage.getItem('solix_pin') || DEFAULT_PIN;
+
+                if (pin === pinGuardado) {
+                    // PIN correcto -> guardar fecha de hoy
+                    localStorage.setItem('solix_pin_fecha', hoy);
+                    pinScreen.style.opacity = '0';
+                    setTimeout(function() {
+                        pinScreen.style.display = 'none';
+                        splash.style.display = 'flex';
+                        iniciarSplash();
+                    }, 500);
+                } else {
+                    // PIN incorrecto
+                    errorMsg.style.display = 'block';
+                    errorMsg.textContent = 'PIN incorrecto. Intenta de nuevo.';
+                    digits.forEach(function(d) {
+                        d.value = '';
+                        d.classList.add('error');
+                    });
+                    setTimeout(function() {
+                        digits.forEach(function(d) { d.classList.remove('error'); });
+                    }, 500);
+                    digits[0].focus();
+                }
+            }
+        }
+
+        function iniciarSplash() {
+            window.addEventListener('load', function() {
                 setTimeout(function() {
-                    if (splash) splash.style.display = 'none';
-                }, 600);
-            }, 2500);
-        });
+                    if (splash) splash.style.opacity = '0';
+                    if (header) header.style.display = 'flex';
+                    setTimeout(function() {
+                        if (splash) splash.style.display = 'none';
+                    }, 600);
+                }, 2500);
+            });
+            // Si ya cargó
+            if (document.readyState === 'complete') {
+                setTimeout(function() {
+                    if (splash) splash.style.opacity = '0';
+                    if (header) header.style.display = 'flex';
+                    setTimeout(function() {
+                        if (splash) splash.style.display = 'none';
+                    }, 600);
+                }, 2500);
+            }
+        }
     })();
     </script>
 

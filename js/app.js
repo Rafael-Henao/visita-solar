@@ -924,6 +924,26 @@
 
     // ========== CONFIGURACIÓN ==========
     function initConfig() {
+        // Cambiar PIN
+        document.getElementById('btn-cambiar-pin').addEventListener('click', () => {
+            const pinActual = document.getElementById('config-pin-actual').value;
+            const pinNuevo = document.getElementById('config-pin-nuevo').value;
+            const pinGuardado = localStorage.getItem('solix_pin') || '2026';
+
+            if (pinActual !== pinGuardado) {
+                showToast('El PIN actual es incorrecto', 'error');
+                return;
+            }
+            if (!/^\d{4,6}$/.test(pinNuevo)) {
+                showToast('El nuevo PIN debe ser de 4 a 6 dígitos', 'error');
+                return;
+            }
+            localStorage.setItem('solix_pin', pinNuevo);
+            document.getElementById('config-pin-actual').value = '';
+            document.getElementById('config-pin-nuevo').value = '';
+            showToast('🔑 PIN cambiado correctamente', 'success');
+        });
+
         document.getElementById('btn-borrar-todo').addEventListener('click', () => {
             if (!confirm('¿Borrar TODOS los datos? Esta acción no se puede deshacer.')) return;
             if (!confirm('¿Estás seguro?')) return;
