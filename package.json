@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "sharp": "^0.34.5",
+    "surge": "^0.27.3"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "selfsigned": "^5.5.0"
+  }
+}

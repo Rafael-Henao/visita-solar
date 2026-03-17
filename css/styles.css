@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* ========== VARIABLES SOLIX SAS ========== */
 :root {
     --primary: #1B2E5A;
@@ -17,6 +18,22 @@
     --text-light: #7f8c8d;
     --border: #dce3eb;
     --shadow: 0 2px 12px rgba(27,46,90,0.08);
+=======
+/* ========== VARIABLES ========== */
+:root {
+    --primary: #ff6f00;
+    --primary-dark: #e65100;
+    --primary-light: #fff3e0;
+    --success: #2e7d32;
+    --warning: #f9a825;
+    --danger: #c62828;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --text: #333333;
+    --text-light: #666666;
+    --border: #e0e0e0;
+    --shadow: 0 2px 8px rgba(0,0,0,0.1);
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
     --radius: 12px;
 }
 
@@ -30,6 +47,7 @@ body {
     padding-bottom: 2rem;
 }
 
+<<<<<<< HEAD
 /* ========== SPLASH SCREEN ========== */
 .splash-screen {
     position: fixed; top: 0; left: 0;
@@ -123,12 +141,20 @@ body {
     background: linear-gradient(135deg, var(--primary), #243b6a);
     color: white;
     padding: 0.8rem 1.2rem;
+=======
+/* ========== HEADER ========== */
+.app-header {
+    background: linear-gradient(135deg, var(--primary), #ff8f00);
+    color: white;
+    padding: 1rem 1.2rem;
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
     display: flex;
     align-items: center;
     justify-content: space-between;
     position: sticky;
     top: 0;
     z-index: 100;
+<<<<<<< HEAD
     box-shadow: 0 2px 15px rgba(27,46,90,0.25);
 }
 .header-logo {
@@ -136,6 +162,12 @@ body {
     filter: drop-shadow(0 0 2px rgba(255,255,255,0.9))
             drop-shadow(0 0 6px rgba(255,255,255,0.5));
 }
+=======
+    box-shadow: 0 2px 10px rgba(255,111,0,0.3);
+}
+.header-content h1 { font-size: 1.3rem; }
+.header-content p { font-size: 0.8rem; opacity: 0.9; }
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 
 .btn-icon {
     background: none; border: none; color: white;
@@ -148,16 +180,26 @@ body {
     position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
     background: white; z-index: 200; transition: left 0.3s ease;
     box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+<<<<<<< HEAD
     display: flex; flex-direction: column;
 }
 .sidebar.open { left: 0; }
 .sidebar-header {
     background: linear-gradient(135deg, var(--primary), #243b6a);
+=======
+}
+.sidebar.open { left: 0; }
+.sidebar-header {
+    background: linear-gradient(135deg, var(--primary), #ff8f00);
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
     color: white; padding: 1.2rem; display: flex;
     justify-content: space-between; align-items: center;
 }
 .sidebar-header h2 { font-size: 1.2rem; }
+<<<<<<< HEAD
 .sidebar nav { flex: 1; }
+=======
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 .sidebar nav a {
     display: flex; align-items: center; padding: 1rem 1.2rem;
     color: var(--text); text-decoration: none;
@@ -165,10 +207,13 @@ body {
     transition: background 0.2s;
 }
 .sidebar nav a:hover, .sidebar nav a.active { background: var(--primary-light); color: var(--primary); }
+<<<<<<< HEAD
 .sidebar-footer {
     padding: 1rem 1.2rem; border-top: 1px solid var(--border);
     text-align: center; font-size: 0.75rem; color: var(--text-light);
 }
+=======
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 
 .overlay {
     display: none; position: fixed; top: 0; left: 0;
@@ -186,13 +231,18 @@ body {
     display: flex; justify-content: space-between; margin-bottom: 1.5rem;
     padding: 0.8rem; background: white; border-radius: var(--radius); box-shadow: var(--shadow);
 }
+<<<<<<< HEAD
 .step { display: flex; flex-direction: column; align-items: center; flex: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .step:active span { transform: scale(0.9); }
+=======
+.step { display: flex; flex-direction: column; align-items: center; flex: 1; }
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 .step span {
     width: 32px; height: 32px; border-radius: 50%; background: var(--border);
     color: var(--text-light); display: flex; align-items: center;
     justify-content: center; font-weight: 700; font-size: 0.85rem; transition: all 0.3s;
 }
+<<<<<<< HEAD
 .step.active span { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(247,148,29,0.4); }
 .step.completed span { background: var(--success); color: white; }
 .step small { font-size: 0.65rem; margin-top: 4px; color: var(--text-light); }
@@ -207,13 +257,33 @@ body {
 /* ========== FORM GROUPS ========== */
 .form-group { margin-bottom: 1rem; }
 .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--primary); }
+=======
+.step.active span { background: var(--primary); color: white; }
+.step.completed span { background: var(--success); color: white; }
+.step small { font-size: 0.65rem; margin-top: 4px; color: var(--text-light); }
+.step.active small { color: var(--primary); font-weight: 600; }
+
+/* ========== FORM STEPS ========== */
+.form-step { display: none; animation: fadeIn 0.3s ease; }
+.form-step.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.form-step h2 { font-size: 1.2rem; margin-bottom: 1rem; color: var(--primary-dark); }
+
+/* ========== FORM GROUPS ========== */
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; }
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 .form-group input, .form-group select, .form-group textarea {
     width: 100%; padding: 0.7rem 0.9rem; border: 2px solid var(--border);
     border-radius: 8px; font-size: 0.95rem; font-family: inherit; background: white;
     transition: border-color 0.2s;
 }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+<<<<<<< HEAD
     outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(247,148,29,0.15);
+=======
+    outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,111,0,0.15);
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 }
 .form-group textarea { resize: vertical; }
 .hint { font-size: 0.8rem; color: var(--text-light); margin-bottom: 1rem; }
@@ -228,10 +298,17 @@ body {
     display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
     transition: all 0.2s;
 }
+<<<<<<< HEAD
 .btn-primary { background: var(--accent); color: white; }
 .btn-primary:hover { background: var(--accent-dark); }
 .btn-secondary { background: var(--primary-light); color: var(--primary); }
 .btn-secondary:hover { background: #d5dded; }
+=======
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: #e8e8e8; color: var(--text); }
+.btn-secondary:hover { background: #d0d0d0; }
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 .btn-success { background: var(--success); color: white; }
 .btn-success:hover { background: #1b5e20; }
 .btn-danger { background: var(--danger); color: white; }
@@ -249,12 +326,18 @@ body {
 .checklist-category {
     background: white; border-radius: var(--radius); padding: 1rem;
     margin-bottom: 1rem; box-shadow: var(--shadow);
+<<<<<<< HEAD
     border-left: 4px solid var(--accent);
+=======
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 }
 .checklist-category h3 {
     font-size: 1rem; margin-bottom: 0.8rem;
     padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-light);
+<<<<<<< HEAD
     color: var(--primary);
+=======
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 }
 .checklist-item {
     display: flex; align-items: center; justify-content: space-between;
@@ -274,19 +357,29 @@ body {
 .check-option.mal input:checked ~ span { background: #ffebee; border-color: var(--danger); color: var(--danger); }
 .check-option.na input:checked ~ span { background: #f0f0f0; border-color: #999; color: #999; }
 
+<<<<<<< HEAD
 /* ========== BORDES ALTERNADOS AZUL / NARANJA ========== */
 .card-sky { border-left: 4px solid var(--sky) !important; }
 .card-accent { border-left: 4px solid var(--accent) !important; }
 
+=======
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 /* ========== MEDICIONES ========== */
 .mediciones-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
 .medicion-card {
     background: white; border-radius: var(--radius); padding: 1rem; box-shadow: var(--shadow);
+<<<<<<< HEAD
     border-left: 4px solid var(--sky);
 }
 .medicion-card h4 {
     margin-bottom: 0.8rem; color: var(--primary); font-size: 0.95rem;
     padding-bottom: 0.4rem; border-bottom: 2px solid var(--sky-light);
+=======
+}
+.medicion-card h4 {
+    margin-bottom: 0.8rem; color: var(--primary-dark); font-size: 0.95rem;
+    padding-bottom: 0.4rem; border-bottom: 2px solid var(--primary-light);
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 }
 @media (min-width: 500px) { .mediciones-grid { grid-template-columns: 1fr 1fr; } }
 
@@ -314,20 +407,44 @@ body {
     cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center;
 }
 .photo-item .photo-number {
+<<<<<<< HEAD
     position: absolute; bottom: 4px; left: 4px; background: rgba(27,46,90,0.7);
     color: white; border-radius: 4px; padding: 2px 6px; font-size: 0.7rem;
 }
 
 
+=======
+    position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.6);
+    color: white; border-radius: 4px; padding: 2px 6px; font-size: 0.7rem;
+}
+
+/* ========== FIRMA ========== */
+.firma-section {
+    background: white; border-radius: var(--radius); padding: 1.2rem;
+    margin: 1rem 0; box-shadow: var(--shadow);
+}
+.firma-section h3 { margin-bottom: 0.5rem; font-size: 1rem; color: var(--primary-dark); }
+.firma-container {
+    border: 2px solid var(--border); border-radius: 8px; overflow: hidden;
+    background: #fafafa; touch-action: none;
+}
+.firma-container canvas { display: block; width: 100%; cursor: crosshair; }
+.firma-actions { margin: 0.5rem 0 1rem; }
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 
 /* ========== HISTORIAL ========== */
 .historial-list { display: flex; flex-direction: column; gap: 0.8rem; }
 .historial-card {
     background: white; border-radius: var(--radius); padding: 1rem;
     box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center;
+<<<<<<< HEAD
     border-left: 4px solid var(--primary);
 }
 .historial-card-info h4 { font-size: 0.95rem; color: var(--primary); }
+=======
+}
+.historial-card-info h4 { font-size: 0.95rem; color: var(--primary-dark); }
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 .historial-card-info p { font-size: 0.8rem; color: var(--text-light); }
 .historial-card-actions { display: flex; gap: 0.4rem; }
 .estado-badge {
@@ -345,15 +462,24 @@ body {
 .config-section {
     background: white; border-radius: var(--radius); padding: 1.2rem;
     margin-bottom: 1rem; box-shadow: var(--shadow);
+<<<<<<< HEAD
     border-left: 4px solid var(--sky);
 }
 .config-section h3 { margin-bottom: 0.6rem; color: var(--primary); }
+=======
+}
+.config-section h3 { margin-bottom: 0.6rem; color: var(--primary-dark); }
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 .config-section p { font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.5rem; }
 
 /* ========== TOAST ========== */
 .toast {
     position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%);
+<<<<<<< HEAD
     background: var(--primary); color: white; padding: 0.8rem 1.5rem;
+=======
+    background: #323232; color: white; padding: 0.8rem 1.5rem;
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
     border-radius: 8px; font-size: 0.9rem; z-index: 1000;
     transition: bottom 0.3s ease; max-width: 90%; text-align: center;
 }
@@ -363,13 +489,19 @@ body {
 
 /* ========== RESPONSIVE ========== */
 @media (max-width: 400px) {
+<<<<<<< HEAD
     .app-header { padding: 0.6rem 0.8rem; }
     .header-logo { height: 32px; }
+=======
+    .app-header { padding: 0.8rem; }
+    .header-content h1 { font-size: 1.1rem; }
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
     .main-content { padding: 0.6rem; }
     .step span { width: 28px; height: 28px; font-size: 0.75rem; }
     .step small { font-size: 0.55rem; }
     .checklist-item { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
     .check-options { align-self: flex-end; }
+<<<<<<< HEAD
     .splash-content { transform: scale(0.85); }
 }
 
@@ -472,4 +604,6 @@ body {
     .solar-data-grid { grid-template-columns: 1fr; }
     .solar-sun-grid { grid-template-columns: 1fr; }
     .solar-extra-grid { grid-template-columns: 1fr; }
+=======
+>>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 }
