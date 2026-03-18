@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1B2E5A">
+    <meta name="description" content="Solix SAS - Visitas Técnicas Paneles Solares">
+    <title>Solix SAS - Visita Técnica</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- SheetJS para exportar Excel (local para funcionar offline) -->
+    <script src="js/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- ========== SPLASH SCREEN ========== -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-content">
+            <!-- Logo real Solix SAS con efecto de brillo -->
+            <div class="logo-wrapper">
+                <img src="icons/logo-solix.png" alt="Solix SAS" class="solix-logo-img">
+            </div>
+
+            <div class="loader-container">
+                <div class="loader-fill"></div>
+                <p>CARGANDO SISTEMA...</p>
+            </div>
+        </div>
+        <div class="splash-bottom">
+            <p class="splash-version">SOLIX SAS v2.0</p>
+        </div>
+    </div>
+
+    <!-- ========== HEADER ========== -->
+    <header class="app-header" id="app-header" style="display:none;">
+        <div class="header-content">
+            <img src="icons/logo-solix.png" alt="Solix SAS" class="header-logo">
+        </div>
+        <button id="btn-menu" class="btn-icon" title="Menú">☰</button>
+    </header>
+
+    <!-- ========== MENÚ LATERAL ========== -->
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2>⚡ Menú</h2>
+            <button id="btn-close-menu" class="btn-icon">✕</button>
+        </div>
+        <nav>
+            <a href="#" data-action="nueva-visita" class="active">📋 Nueva Visita</a>
+            <a href="#" data-action="historial">📂 Historial de Visitas</a>
+            <a href="#" data-action="exportar-todo">📊 Exportar Todo a Excel</a>
+            <a href="#" data-action="sync-sheets">☁️ Google Sheets</a>
+            <a href="#" data-action="sync-onedrive">💼 OneDrive 365</a>
+            <a href="#" data-action="configuracion">⚙️ Configuración</a>
+        </nav>
+        <div class="sidebar-footer">
+            <p>Solix SAS &copy; 2026</p>
+        </div>
+    </div>
+    <div id="overlay" class="overlay"></div>
+
+    <!-- ========== CONTENIDO PRINCIPAL ========== -->
+    <main id="main-content" class="main-content">
+
+        <!-- VISTA: Nueva Visita -->
+        <div id="view-nueva-visita" class="view active">
+            <!-- Indicador de pasos -->
+            <div class="step-indicator">
+                <div class="step active" data-step="1"><span>1</span><small>Cliente</small></div>
+                <div class="step" data-step="2"><span>2</span><small>Sitio</small></div>
+                <div class="step" data-step="3"><span>3</span><small>Mediciones</small></div>
+                <div class="step" data-step="4"><span>4</span><small>Fotos</small></div>
+            </div>
+
+            <!-- PASO 1: Datos del Cliente y Sitio -->
+            <section id="step-1" class="form-step active">
+                <h2>📋 Datos del Cliente</h2>
+                <div class="form-group">
+                    <label for="fecha">Fecha de Visita</label>
+                    <input type="date" id="fecha" required>
+                </div>
+                <div class="form-group">
+                    <label for="hora">Hora</label>
+                    <input type="time" id="hora" required>
+                </div>
+                <div class="form-group">
+                    <label for="empresa">Nombre del Cliente</label>
+                    <input type="text" id="empresa" placeholder="Nombre completo del cliente" required>
+                </div>
+                <div class="form-group">
+                    <label for="email-cliente">Correo Electrónico</label>
+                    <input type="email" id="email-cliente" placeholder="cliente@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="telefono">Teléfono</label>
+                    <input type="tel" id="telefono" placeholder="10 dígitos">
+                </div>
+                <div class="form-group">
+                    <label for="direccion">Dirección de Instalación</label>
+                    <input type="text" id="direccion" placeholder="Calle, número, colonia, ciudad">
+                </div>
+                <div class="form-group">
+                    <label>📍 Ubicación GPS</label>
+                    <div class="gps-container">
+                        <input type="text" id="gps-coords" readonly placeholder="Presiona obtener ubicación">
+                        <button type="button" id="btn-gps" class="btn btn-secondary">📍 Obtener</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="responsable-visita">Asesor / Responsable de la Visita</label>
+                    <input type="text" id="responsable-visita" placeholder="Tu nombre">
+                </div>
+                <div class="form-group">
+                    <label for="tipo-cliente">Tipo de Cliente</label>
+                    <select id="tipo-cliente">
+                        <option value="">Seleccionar...</option>
+                        <option value="residencial">🏠 Residencial</option>
+                        <option value="comercial">🏢 Comercial</option>
+                        <option value="industrial">🏭 Industrial</option>
+                        <option value="agricola">🌾 Agrícola / Bombeo</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tarifa-cfe">Tarifa CFE</label>
+                    <select id="tarifa-cfe">
+                        <option value="">Seleccionar...</option>
+                        <option value="1">1 - Doméstica</option>
+                        <option value="1A">1A - Doméstica (cálido)</option>
+                        <option value="1B">1B - Doméstica (templado)</option>
+                        <option value="1C">1C - Doméstica (cálido extremo)</option>
+                        <option value="1D">1D - Doméstica (cálido tropical)</option>
+                        <option value="1E">1E - Doméstica (cálido extremo tropical)</option>
+                        <option value="1F">1F - Doméstica (cálido muy extremo)</option>
+                        <option value="DAC">DAC - Doméstico de Alto Consumo</option>
+                        <option value="PDBT">PDBT - Pequeña Demanda Baja Tensión</option>
+                        <option value="GDBT">GDBT - Gran Demanda Baja Tensión</option>
+                        <option value="GDMT">GDMT - Gran Demanda Media Tensión</option>
+                        <option value="RAMT">RAMT - Riego Agrícola Media Tensión</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="consumo-bimestral">Consumo Bimestral Promedio (kWh)</label>
+                    <input type="number" id="consumo-bimestral" step="1" placeholder="Ej: 850">
+                </div>
+                <div class="form-group">
+                    <label for="pago-bimestral">Pago Bimestral Promedio (COP)</label>
+                    <input type="number" id="pago-bimestral" step="0.01" placeholder="Ej: 350000">
+                </div>
+                <div class="form-group">
+                    <label for="motivo">Motivo / Interés del Cliente</label>
+                    <textarea id="motivo" rows="3" placeholder="Ahorro en recibo, independencia energética, proyecto nuevo..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary btn-next" data-next="2">Siguiente →</button>
+                </div>
+            </section>
+
+            <!-- PASO 2: Evaluación del Sitio (Checklist) -->
+            <section id="step-2" class="form-step">
+                <h2>✅ Evaluación del Sitio</h2>
+                <p class="hint">Evalúa las condiciones del sitio para la instalación solar</p>
+
+                <!-- ===== ANÁLISIS SOLAR GPS ===== -->
+                <div class="checklist-category solar-analysis-section">
+                    <h3>🛰️ Análisis Solar y Geolocalización</h3>
+                    <p class="hint">Obtén las coordenadas y el análisis de trayectoria solar</p>
+
+                    <!-- Botón obtener análisis -->
+                    <div class="solar-action-bar">
+                        <button type="button" id="btn-solar-analysis" class="btn btn-primary btn-solar">
+                            🛰️ Obtener Análisis Solar
+                        </button>
+                    </div>
+
+                    <!-- Mapa Satelital -->
+                    <div id="solar-map-container" class="solar-map-container" style="display:none;">
+                        <div class="solar-map-header">
+                            <span>📍 Vista Satelital</span>
+                            <button type="button" id="btn-open-gmaps" class="btn btn-small btn-secondary">Abrir en Google Maps</button>
+                        </div>
+                        <div id="solar-map" class="solar-map">
+                            <iframe id="map-iframe" width="100%" height="250" style="border:0; border-radius: 8px;" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+                        </div>
+                    </div>
+
+                    <!-- Datos GPS -->
+                    <div id="solar-gps-data" class="solar-data-grid" style="display:none;">
+                        <div class="solar-data-card">
+                            <div class="solar-data-icon">📍</div>
+                            <div class="solar-data-info">
+                                <span class="solar-data-label">Coordenadas</span>
+                                <span class="solar-data-value" id="solar-lat">--</span>
+                                <span class="solar-data-value" id="solar-lng">--</span>
+                            </div>
+                        </div>
+                        <div class="solar-data-card">
+                            <div class="solar-data-icon">🎯</div>
+                            <div class="solar-data-info">
+                                <span class="solar-data-label">Precisión GPS</span>
+                                <span class="solar-data-value" id="solar-accuracy">--</span>
+                            </div>
+                        </div>
+                        <div class="solar-data-card">
+                            <div class="solar-data-icon">⬆️</div>
+                            <div class="solar-data-info">
+                                <span class="solar-data-label">Altitud</span>
+                                <span class="solar-data-value" id="solar-altitude">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trayectoria Solar -->
+                    <div id="solar-sun-data" class="solar-sun-section" style="display:none;">
+                        <h4>☀️ Trayectoria Solar del Día</h4>
+
+                        <!-- Canvas brújula solar -->
+                        <div class="solar-compass-wrapper">
+                            <canvas id="solar-compass" width="300" height="300"></canvas>
+                            <p class="hint" style="text-align:center; margin-top:0.3rem;">Brújula solar con trayectoria del sol</p>
+                        </div>
+
+                        <div class="solar-sun-grid">
+                            <div class="sun-time-card sunrise">
+                                <div class="sun-icon">🌅</div>
+                                <div class="sun-info">
+                                    <span class="sun-label">Amanecer</span>
+                                    <span class="sun-value" id="sun-rise-time">--:--</span>
+                                    <span class="sun-detail" id="sun-rise-azimuth">Az: --°</span>
+                                </div>
+                            </div>
+                            <div class="sun-time-card noon">
+                                <div class="sun-icon">☀️</div>
+                                <div class="sun-info">
+                                    <span class="sun-label">Cénit Solar</span>
+                                    <span class="sun-value" id="sun-noon-time">--:--</span>
+                                    <span class="sun-detail" id="sun-noon-elevation">Elevación: --°</span>
+                                </div>
+                            </div>
+                            <div class="sun-time-card sunset">
+                                <div class="sun-icon">🌇</div>
+                                <div class="sun-info">
+                                    <span class="sun-label">Atardecer</span>
+                                    <span class="sun-value" id="sun-set-time">--:--</span>
+                                    <span class="sun-detail" id="sun-set-azimuth">Az: --°</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="solar-extra-grid">
+                            <div class="solar-extra-item">
+                                <span class="solar-extra-label">🕐 Horas de luz</span>
+                                <span class="solar-extra-value" id="sun-daylight">--</span>
+                            </div>
+                            <div class="solar-extra-item">
+                                <span class="solar-extra-label">🧭 Orientación óptima paneles</span>
+                                <span class="solar-extra-value" id="sun-optimal-orientation">--</span>
+                            </div>
+                            <div class="solar-extra-item">
+                                <span class="solar-extra-label">📐 Inclinación óptima</span>
+                                <span class="solar-extra-value" id="sun-optimal-tilt">--</span>
+                            </div>
+                            <div class="solar-extra-item">
+                                <span class="solar-extra-label">🌡️ Posición solar actual</span>
+                                <span class="solar-extra-value" id="sun-current-pos">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checklist-category">
+                    <h3>🏠 Estructura del Techo</h3>
+                    <div class="checklist-item">
+                        <span>Estado general del techo</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-techo-estado" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-techo-estado" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-techo-estado" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-techo-estado" value="na"><span>N/A</span></label>
+                        </div>
+                    </div>
+                    <div class="checklist-item">
+                        <span>Capacidad de carga del techo</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-carga-techo" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-carga-techo" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-carga-techo" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-carga-techo" value="na"><span>N/A</span></label>
+                        </div>
+                    </div>
+                    <div class="checklist-item">
+                        <span>Impermeabilización</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-impermeabilizacion" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-impermeabilizacion" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-impermeabilizacion" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-impermeabilizacion" value="na"><span>N/A</span></label>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 0.5rem;">
+                        <label for="tipo-techo">Tipo de Techo</label>
+                        <select id="tipo-techo">
+                            <option value="">Seleccionar...</option>
+                            <option value="losa-concreto">Losa de concreto</option>
+                            <option value="lamina-metal">Lámina metálica</option>
+                            <option value="lamina-galvanizada">Lámina galvanizada</option>
+                            <option value="teja">Teja</option>
+                            <option value="domos">Domos / Tragaluces</option>
+                            <option value="piso-tierra">Montaje en piso / tierra</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <!-- Fotos del techo -->
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--primary);">📸 Fotos de la Estructura del Techo</label>
+                        <p class="hint" style="margin-bottom: 0.5rem;">Captura fotos del estado del techo, tipo de material y estructura</p>
+                        <div style="display: flex; gap: 0.6rem; margin-bottom: 0.8rem;">
+                            <button type="button" id="btn-techo-camara" class="btn btn-primary btn-small">📸 Tomar Foto</button>
+                            <button type="button" id="btn-techo-galeria" class="btn btn-secondary btn-small">📁 Galería</button>
+                        </div>
+                        <div id="techo-gallery" class="photo-gallery" style="min-height: 120px;">
+                            <div class="photo-placeholder">
+                                <span>🏠</span>
+                                <p>Sin fotos del techo</p>
+                            </div>
+                        </div>
+                        <input type="file" id="techo-camera-input" accept="image/*" capture="environment" style="display:none">
+                        <input type="file" id="techo-gallery-input" accept="image/*" multiple style="display:none">
+                    </div>
+                </div>
+
+                <div class="checklist-category">
+                    <h3>☀️ Orientación y Exposición Solar</h3>
+                    <div class="checklist-item">
+                        <span>Orientación hacia el sur</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-orientacion-sur" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-orientacion-sur" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-orientacion-sur" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-orientacion-sur" value="na"><span>N/A</span></label>
+                        </div>
+                    </div>
+                    <div class="checklist-item">
+                        <span>Libre de sombras (árboles, edificios, tinacos)</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-sombras" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-sombras" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-sombras" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-sombras" value="na"><span>N/A</span></label>
+                        </div>
+                    </div>
+                    <div class="checklist-item">
+                        <span>Espacio disponible suficiente</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-espacio" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-espacio" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-espacio" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-espacio" value="na"><span>N/A</span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checklist-category">
+                    <h3>⚡ Instalación Eléctrica Existente</h3>
+                    <div class="checklist-item">
+                        <span>Centro de carga / Tablero principal</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-centro-carga" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-centro-carga" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-centro-carga" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-centro-carga" value="na"><span>N/A</span></label>
+                        </div>
+                    </div>
+                    <div class="checklist-item">
+                        <span>Medidor bidireccional o espacio para uno</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-medidor" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-medidor" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-medidor" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-medidor" value="na"><span>N/A</span></label>
+                        </div>
+                    </div>
+                    <div class="checklist-item">
+                        <span>Sistema de tierra física</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-tierra" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-tierra" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-tierra" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-tierra" value="na"><span>N/A</span></label>
+                        </div>
+                    </div>
+                    <div class="checklist-item">
+                        <span>Protecciones eléctricas adecuadas</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-protecciones" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-protecciones" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-protecciones" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-protecciones" value="na"><span>N/A</span></label>
+                        </div>
+                    </div>
+                    <div class="checklist-item">
+                        <span>Ruta de cableado (techo a tablero)</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-ruta-cable" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-ruta-cable" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-ruta-cable" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-ruta-cable" value="na"><span>N/A</span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checklist-category">
+                    <h3>⚡ Proveedor de Energía</h3>
+                    <div class="form-group" style="margin-top: 0.5rem;">
+                        <label for="proveedor-energia">Nombre del Proveedor de Energía</label>
+                        <input type="text" id="proveedor-energia" placeholder="Ej: EPM, Codensa, Celsia, etc.">
+                    </div>
+                    <div class="checklist-item">
+                        <span>Contrato vigente con el proveedor</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-contrato-proveedor" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-contrato-proveedor" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-contrato-proveedor" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-contrato-proveedor" value="na"><span>N/A</span></label>
+                        </div>
+                    </div>
+                    <div class="checklist-item">
+                        <span>Acceso al medidor de energía</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-acceso-medidor" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-acceso-medidor" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-acceso-medidor" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-acceso-medidor" value="na"><span>N/A</span></label>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 0.5rem;">
+                        <label for="numero-servicio">No. de Servicio / Cuenta</label>
+                        <input type="text" id="numero-servicio" placeholder="Número de cuenta o contrato">
+                    </div>
+                </div>
+
+                <div class="checklist-category">
+                    <h3>🔧 Acceso y Logística</h3>
+                    <div class="checklist-item">
+                        <span>Acceso al techo (escaleras, escalera marina)</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-acceso-techo" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-acceso-techo" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-acceso-techo" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-acceso-techo" value="na"><span>N/A</span></label>
+                        </div>
+                    </div>
+                    <div class="checklist-item">
+                        <span>Acceso vehicular para equipo/materiales</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-acceso-vehicular" value="bien"><span>✓</span></label>
+                            <label class="check-option regular"><input type="radio" name="check-acceso-vehicular" value="regular"><span>~</span></label>
+                            <label class="check-option mal"><input type="radio" name="check-acceso-vehicular" value="mal"><span>✗</span></label>
+                            <label class="check-option na"><input type="radio" name="check-acceso-vehicular" value="na"><span>N/A</span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="observaciones-checklist">Observaciones de la Evaluación</label>
+                    <textarea id="observaciones-checklist" rows="4" placeholder="Obstáculos, sombras de tinacos, antenas, árboles cercanos..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary btn-prev" data-prev="1">← Anterior</button>
+                    <button type="button" class="btn btn-primary btn-next" data-next="3">Siguiente →</button>
+                </div>
+            </section>
+
+            <!-- PASO 3: Mediciones del Sitio -->
+            <section id="step-3" class="form-step">
+                <h2>📏 Mediciones del Sitio</h2>
+                <p class="hint">Registra las mediciones para el diseño del sistema solar</p>
+
+                <div class="mediciones-grid">
+                    <div class="medicion-card">
+                        <h4>📐 Área Disponible</h4>
+                        <div class="form-group">
+                            <label for="area-largo">Largo del techo (m)</label>
+                            <input type="number" id="area-largo" step="0.1" placeholder="12.0">
+                        </div>
+                        <div class="form-group">
+                            <label for="area-ancho">Ancho del techo (m)</label>
+                            <input type="number" id="area-ancho" step="0.1" placeholder="8.0">
+                        </div>
+                        <div class="form-group">
+                            <label for="area-util">Área útil disponible (m²)</label>
+                            <input type="number" id="area-util" step="0.1" placeholder="80.0">
+                        </div>
+                    </div>
+
+                    <div class="medicion-card">
+                        <h4>📐 Inclinación y Orientación</h4>
+                        <div class="form-group">
+                            <label for="inclinacion-techo">Inclinación del techo (°)</label>
+                            <input type="number" id="inclinacion-techo" step="0.5" placeholder="15">
+                        </div>
+                        <div class="form-group">
+                            <label for="azimut">Azimut / Orientación (°)</label>
+                            <input type="number" id="azimut" step="1" placeholder="180 = Sur">
+                        </div>
+                        <div class="form-group">
+                            <label for="altura-techo">Altura del techo (m)</label>
+                            <input type="number" id="altura-techo" step="0.1" placeholder="3.5">
+                        </div>
+                    </div>
+
+                    <div class="medicion-card">
+                        <h4>☀️ Irradiación Solar</h4>
+                        <div class="form-group">
+                            <label for="horas-solar-pico">Horas Solar Pico (HSP)</label>
+                            <input type="number" id="horas-solar-pico" step="0.1" placeholder="5.2">
+                        </div>
+                        <div class="form-group">
+                            <label for="irradiancia">Irradiancia (kWh/m²/día)</label>
+                            <input type="number" id="irradiancia" step="0.1" placeholder="5.5">
+                        </div>
+                    </div>
+
+                    <div class="medicion-card">
+                        <h4>⚡ Eléctrico Existente</h4>
+                        <div class="form-group">
+                            <label for="voltaje-red">Voltaje en Red (V)</label>
+                            <input type="number" id="voltaje-red" step="0.1" placeholder="127">
+                        </div>
+                        <div class="form-group">
+                            <label for="capacidad-interruptor">Interruptor Principal (A)</label>
+                            <input type="number" id="capacidad-interruptor" step="1" placeholder="30">
+                        </div>
+                        <div class="form-group">
+                            <label for="calibre-acometida">Calibre Acometida</label>
+                            <input type="text" id="calibre-acometida" placeholder="Ej: Cal. 8 AWG">
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="equipo-medicion">Equipo de Medición Utilizado</label>
+                    <input type="text" id="equipo-medicion" placeholder="Ej: Solarímetro, Multímetro, App Brújula, Cinta métrica...">
+                </div>
+
+                <div class="form-group">
+                    <label for="observaciones-mediciones">Observaciones de Mediciones</label>
+                    <textarea id="observaciones-mediciones" rows="3" placeholder="Detalle de sombras, obstáculos, distancias especiales..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary btn-prev" data-prev="2">← Anterior</button>
+                    <button type="button" class="btn btn-primary btn-next" data-next="4">Siguiente →</button>
+                </div>
+            </section>
+
+            <!-- PASO 4 (FINAL): Conclusión -->
+            <section id="step-4" class="form-step">
+                <h2>📷 Evidencia Fotográfica</h2>
+                <p class="hint">Fotos del techo, medidor, tablero, sombras (máx. 10)</p>
+
+                <div class="photo-labels">
+                    <p class="hint"><strong>Fotos sugeridas:</strong> 1) Techo completo, 2) Medidor, 3) Centro de carga, 4) Ruta de cableado, 5) Sombras/obstáculos, 6) Recibo de luz</p>
+                </div>
+
+                <div class="photo-controls">
+                    <button type="button" id="btn-take-photo" class="btn btn-primary">
+                        📸 Tomar Foto
+                    </button>
+                    <button type="button" id="btn-upload-photo" class="btn btn-secondary">
+                        📁 Subir desde Galería
+                    </button>
+                    <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none">
+                    <input type="file" id="gallery-input" accept="image/*" multiple style="display:none">
+                </div>
+
+                <div id="photo-gallery" class="photo-gallery">
+                    <div class="photo-placeholder">
+                        <span>📷</span>
+                        <p>Aún no hay fotos</p>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="observaciones-fotos">Descripción de Evidencias</label>
+                    <textarea id="observaciones-fotos" rows="3" placeholder="Describe lo que muestra cada foto..."></textarea>
+                </div>
+
+                <hr style="margin: 1.5rem 0; border: none; border-top: 2px solid var(--border);">
+
+                <h3 style="color: var(--primary); margin-bottom: 1rem;">📝 Conclusión de la Visita</h3>
+
+                <div class="form-group">
+                    <label for="observaciones-generales">Observaciones Generales</label>
+                    <textarea id="observaciones-generales" rows="4" placeholder="Conclusiones de la visita, viabilidad del proyecto..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="recomendaciones">Recomendaciones para el Cliente</label>
+                    <textarea id="recomendaciones" rows="4" placeholder="Sistema recomendado, trabajos previos, plazos estimados..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="viabilidad">Viabilidad del Proyecto</label>
+                    <select id="viabilidad">
+                        <option value="">Seleccionar...</option>
+                        <option value="excelente">🟢 Excelente - Condiciones ideales</option>
+                        <option value="bueno">🔵 Bueno - Viable con mínimos ajustes</option>
+                        <option value="regular">🟡 Regular - Requiere trabajos adicionales</option>
+                        <option value="dificil">🟠 Difícil - Obstáculos significativos</option>
+                        <option value="no-viable">🔴 No Viable - No se recomienda</option>
+                    </select>
+                </div>
+
+                <div class="form-actions final-actions">
+                    <button type="button" class="btn btn-secondary btn-prev" data-prev="3">← Anterior</button>
+                    <button type="button" id="btn-guardar" class="btn btn-success">💾 Guardar Visita</button>
+                    <button type="button" id="btn-excel" class="btn btn-primary">📊 Descargar Excel</button>
+                </div>
+            </section>
+        </div>
+
+        <!-- VISTA: Historial -->
+        <div id="view-historial" class="view">
+            <h2>📂 Historial de Visitas</h2>
+            <div id="historial-list" class="historial-list">
+                <p class="empty-state">No hay visitas guardadas</p>
+            </div>
+        </div>
+
+        <!-- VISTA: Configuración -->
+        <div id="view-configuracion" class="view">
+            <h2>⚙️ Configuración</h2>
+            <div class="config-section">
+                <h3>☁️ Google Sheets</h3>
+                <p class="hint">Pega la URL de tu Google Apps Script para sincronización automática</p>
+                <div class="form-group">
+                    <label for="sheets-url">URL del Web App</label>
+                    <input type="url" id="sheets-url" placeholder="https://script.google.com/macros/s/...">
+                </div>
+                <button type="button" id="btn-guardar-config" class="btn btn-primary">Guardar Configuración</button>
+            </div>
+            <div class="config-section">
+                <h3>� OneDrive / Microsoft 365</h3>
+                <p class="hint">Sincroniza las visitas directamente con el OneDrive empresarial usando Power Automate</p>
+                <div class="form-group">
+                    <label for="onedrive-url">URL del Flow de Power Automate</label>
+                    <input type="url" id="onedrive-url" placeholder="https://prod-xx.westus.logic.azure.com:443/workflows/...">
+                </div>
+                <button type="button" id="btn-guardar-onedrive" class="btn btn-primary">💾 Guardar URL OneDrive</button>
+                <details class="config-help" style="margin-top: 0.8rem;">
+                    <summary style="cursor:pointer; color: var(--sky); font-weight:600;">📖 ¿Cómo configurar Power Automate? (paso a paso)</summary>
+                    <div class="help-content" style="margin-top:0.5rem; padding:0.8rem; background:#f0f5ff; border-radius:8px; font-size:0.82rem; line-height:1.6;">
+                        <p><strong>1.</strong> Entra a <a href="https://make.powerautomate.com" target="_blank" style="color:var(--sky)">make.powerautomate.com</a> con tu cuenta empresarial</p>
+                        <p><strong>2.</strong> Clic en <strong>+ Crear</strong> → <strong>Flujo de nube instantáneo</strong></p>
+                        <p><strong>3.</strong> Nombre: <em>"Visitas Solares Solix"</em> → Trigger: <strong>"Cuando se recibe una solicitud HTTP"</strong></p>
+                        <p><strong>4.</strong> En el trigger, pega este esquema JSON:</p>
+                        <pre style="background:#1B2E5A; color:#FFD54F; padding:0.5rem; border-radius:6px; overflow-x:auto; font-size:0.72rem;">{"type":"array","items":{"type":"object","properties":{"id":{"type":"integer"},"fecha":{"type":"string"},"cliente":{"type":"string"},"direccion":{"type":"string"},"gps":{"type":"string"}}}}</pre>
+                        <p><strong>5.</strong> Agrega acción: <strong>"Crear archivo" (OneDrive for Business)</strong></p>
+                        <p>• Carpeta: <em>/Visitas Solares/</em><br>• Nombre: <em>Visitas_@{utcNow()}.json</em><br>• Contenido: selecciona el <strong>Body</strong> del trigger</p>
+                        <p><strong>6.</strong> <strong>Guardar</strong> el flujo → Vuelve al trigger → Copia la <strong>URL HTTP POST</strong></p>
+                        <p><strong>7.</strong> Pega esa URL arriba y guarda 👆</p>
+                        <p style="margin-top:0.5rem;"><strong>💡 TIP:</strong> También puedes agregar una acción <em>"Agregar fila a tabla de Excel"</em> para que los datos vayan directo a un Excel en OneDrive.</p>
+                    </div>
+                </details>
+            </div>
+            <div class="config-section">
+                <h3>�📱 Información de la App</h3>
+                <p>Versión: 2.1.0 — Solix SAS</p>
+                <p>Visitas guardadas: <span id="total-visitas">0</span></p>
+                <button type="button" id="btn-borrar-todo" class="btn btn-danger">🗑️ Borrar Todos los Datos</button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Toast de notificaciones -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Splash Screen Script -->
+    <script>
+    (function() {
+        // Ocultar splash y mostrar app
+        window.addEventListener('load', function() {
+            var splash = document.getElementById('splash-screen');
+            var header = document.getElementById('app-header');
+            setTimeout(function() {
+                if (splash) splash.style.opacity = '0';
+                if (header) header.style.display = 'flex';
+                setTimeout(function() {
+                    if (splash) splash.style.display = 'none';
+                }, 600);
+            }, 2500);
+        });
+    })();
+    </script>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+
+    <!-- Forzar actualización del Service Worker -->
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(function(reg) {
+            // Verificar actualizaciones inmediatamente
+            reg.update();
+            reg.addEventListener('updatefound', function() {
+                var newSW = reg.installing;
+                newSW.addEventListener('statechange', function() {
+                    if (newSW.state === 'activated') {
+                        // Nueva versión activada, recargar
+                        window.location.reload();
+                    }
+                });
+            });
+        });
+        // Si el SW toma control, recargar para usar la nueva versión
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+            window.location.reload();
+        });
+    }
+    </script>
+</body>
+</html>
