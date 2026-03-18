@@ -7,6 +7,7 @@
 
     let currentStep = 1;
     let photos = [];
+    let techoPhotos = [];
     let firmaCtx, firmaCanvas, firmaDibujando = false;
 
     document.addEventListener('DOMContentLoaded', init);
@@ -77,12 +78,9 @@
                     case 'exportar-todo':
                         exportarTodoExcel();
                         break;
-<<<<<<< HEAD
-=======
                     case 'sync-sheets':
                         sincronizarGoogleSheets();
                         break;
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
                     case 'configuracion':
                         document.getElementById('view-configuracion').classList.add('active');
                         updateConfigInfo();
@@ -101,15 +99,12 @@
         document.querySelectorAll('.btn-prev').forEach(btn => {
             btn.addEventListener('click', () => goToStep(parseInt(btn.dataset.prev)));
         });
-<<<<<<< HEAD
         // Click directo en los indicadores de paso
         document.querySelectorAll('.step-indicator .step').forEach(step => {
             step.addEventListener('click', () => {
                 goToStep(parseInt(step.dataset.step));
             });
         });
-=======
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
     }
 
     function goToStep(step) {
@@ -126,14 +121,9 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-<<<<<<< HEAD
     // ========== GPS + ANÁLISIS SOLAR ==========
     function initGPS() {
         // Botón GPS básico del paso 1
-=======
-    // ========== GPS ==========
-    function initGPS() {
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
         document.getElementById('btn-gps').addEventListener('click', () => {
             if (!navigator.geolocation) {
                 showToast('GPS no disponible en este dispositivo', 'error');
@@ -159,8 +149,6 @@
                 { enableHighAccuracy: true, timeout: 10000 }
             );
         });
-<<<<<<< HEAD
-
         // Botón Análisis Solar completo (Paso 2)
         const btnSolar = document.getElementById('btn-solar-analysis');
         if (btnSolar) {
@@ -486,8 +474,6 @@
         ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
         ctx.stroke();
         ctx.setLineDash([]);
-=======
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
     }
 
     // ========== FOTOS ==========
@@ -500,6 +486,55 @@
 
         cameraInput.addEventListener('change', handlePhotos);
         galleryInput.addEventListener('change', handlePhotos);
+
+        initDynamicAreas();
+    }
+
+    // Áreas dinámicas disponibles
+    function initDynamicAreas() {
+        const container = document.getElementById('areas-container');
+        const btnAdd = document.getElementById('btn-add-area');
+        if (!container || !btnAdd) return;
+
+        btnAdd.addEventListener('click', () => {
+            const current = container.querySelectorAll('.area-item').length;
+            const index = current + 1;
+            const div = document.createElement('div');
+            div.className = 'area-item';
+            div.dataset.index = String(index);
+            div.innerHTML = `
+                <div class="form-group">
+                    <label for="area-${index}-descripcion">Descripción del área</label>
+                    <input type="text" id="area-${index}-descripcion" placeholder="Ej: Techo bodega / parqueadero">
+                </div>
+                <div class="form-group">
+                    <label for="area-${index}-largo">Largo del techo (m)</label>
+                    <input type="number" id="area-${index}-largo" step="0.1" placeholder="12.0">
+                </div>
+                <div class="form-group">
+                    <label for="area-${index}-ancho">Ancho del techo (m)</label>
+                    <input type="number" id="area-${index}-ancho" step="0.1" placeholder="8.0">
+                </div>
+                <div class="form-group">
+                    <label for="area-${index}-util">Área útil disponible (m²)</label>
+                    <input type="number" id="area-${index}-util" step="0.1" placeholder="80.0">
+                </div>
+                <div class="form-group">
+                    <label for="area-${index}-fotos">📸 Fotos del área</label>
+                    <input type="file" id="area-${index}-fotos" accept="image/*" multiple>
+                </div>
+                <button type="button" class="btn btn-small btn-danger btn-remove-area">Quitar esta área</button>
+                <hr style="margin:0.8rem 0; border:none; border-top:1px dashed var(--border);">
+            `;
+            container.appendChild(div);
+
+            const btnRemove = div.querySelector('.btn-remove-area');
+            if (btnRemove) {
+                btnRemove.addEventListener('click', () => {
+                    container.removeChild(div);
+                });
+            }
+        });
     }
 
     function handlePhotos(e) {
@@ -522,7 +557,6 @@
         e.target.value = '';
     }
 
-<<<<<<< HEAD
     // ========== FOTOS DEL TECHO ==========
     function initTechoPhotos() {
         const techoCamera = document.getElementById('techo-camera-input');
@@ -582,8 +616,6 @@
         });
     }
 
-=======
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
     function compressImage(dataUrl, maxWidth, quality, callback) {
         const img = new Image();
         img.onload = () => {
@@ -620,11 +652,10 @@
         });
     }
 
-<<<<<<< HEAD
-=======
     // ========== FIRMA DIGITAL ==========
     function initFirma() {
         firmaCanvas = document.getElementById('firma-canvas');
+        if (!firmaCanvas) return;
         firmaCtx = firmaCanvas.getContext('2d');
 
         function resizeCanvas() {
@@ -673,96 +704,32 @@
 
     function stopDraw() { firmaDibujando = false; }
 
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
-    // ========== RECOLECTAR DATOS ==========
-    function recolectarDatos() {
-        const data = {
-            // Datos del Cliente
-            fecha: document.getElementById('fecha').value,
-            hora: document.getElementById('hora').value,
-            cliente: document.getElementById('empresa').value,
-            email: document.getElementById('email-cliente').value,
-            telefono: document.getElementById('telefono').value,
-            direccion: document.getElementById('direccion').value,
-            gps: document.getElementById('gps-coords').value,
-            responsableVisita: document.getElementById('responsable-visita').value,
-            tipoCliente: document.getElementById('tipo-cliente').value,
-<<<<<<< HEAD
-            tarifaCFE: document.getElementById('tarifa-cfe').value,
-=======
-            kilovatiosContratados: document.getElementById('kilovatios-contratados').value,
-            requiereBaterias: document.getElementById('requiere-baterias').checked,
-            horasRespaldo: document.getElementById('requiere-baterias').checked ? document.getElementById('horas-respaldo').value : '',
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
-            consumoBimestral: document.getElementById('consumo-bimestral').value,
-            pagoBimestral: document.getElementById('pago-bimestral').value,
-            motivo: document.getElementById('motivo').value,
+    // ========== ACCIONES (GUARDAR / EXCEL) ==========
+    function initActions() {
+        const btnGuardar = document.getElementById('btn-guardar');
+        const btnExcel = document.getElementById('btn-excel');
 
-<<<<<<< HEAD
-            // Análisis Solar
-            analisisSolar: {
-                latitud: document.getElementById('solar-lat').textContent,
-                longitud: document.getElementById('solar-lng').textContent,
-                precision: document.getElementById('solar-accuracy').textContent,
-                altitud: document.getElementById('solar-altitude').textContent,
-                amanecer: document.getElementById('sun-rise-time').textContent,
-                amanecerAzimut: document.getElementById('sun-rise-azimuth').textContent,
-                cenitSolar: document.getElementById('sun-noon-time').textContent,
-                cenitElevacion: document.getElementById('sun-noon-elevation').textContent,
-                atardecer: document.getElementById('sun-set-time').textContent,
-                atardecerAzimut: document.getElementById('sun-set-azimuth').textContent,
-                horasLuz: document.getElementById('sun-daylight').textContent,
-                orientacionOptima: document.getElementById('sun-optimal-orientation').textContent,
-                inclinacionOptima: document.getElementById('sun-optimal-tilt').textContent,
-                posicionActual: document.getElementById('sun-current-pos').textContent
-            const data = {
-                // Datos del Cliente
-                fecha: document.getElementById('fecha').value,
-                hora: document.getElementById('hora').value,
-                cliente: document.getElementById('empresa').value,
-                email: document.getElementById('email-cliente').value,
-                telefono: document.getElementById('telefono').value,
-                direccion: document.getElementById('direccion').value,
-                gps: document.getElementById('gps-coords').value,
-                responsableVisita: document.getElementById('responsable-visita').value,
-                tipoCliente: document.getElementById('tipo-cliente').value,
-                kilovatiosContratados: document.getElementById('kilovatios-contratados').value,
-                requiereBaterias: document.getElementById('requiere-baterias').checked,
-                horasRespaldo: document.getElementById('requiere-baterias').checked ? document.getElementById('horas-respaldo').value : '',
-                consumoBimestral: document.getElementById('consumo-bimestral').value,
-                pagoBimestral: document.getElementById('pago-bimestral').value,
-                motivo: document.getElementById('motivo').value,
-                // Checklist
-                checklist: {},
-                tipoTecho: document.getElementById('tipo-techo').value,
-                observacionesChecklist: document.getElementById('observaciones-checklist').value,
-                // Mediciones
-                mediciones: {
-                    areaLargo: document.getElementById('area-largo').value,
-                    areaAncho: document.getElementById('area-ancho').value,
-                    areaUtil: document.getElementById('area-util').value,
-                    inclinacionTecho: document.getElementById('inclinacion-techo').value,
-                    azimut: document.getElementById('azimut').value,
-                    alturaTecho: document.getElementById('altura-techo').value,
-                    horasSolarPico: document.getElementById('horas-solar-pico').value,
-                    irradiancia: document.getElementById('irradiancia').value,
-                    voltajeRed: document.getElementById('voltaje-red').value,
-                    capacidadInterruptor: document.getElementById('capacidad-interruptor').value,
-                    calibreAcometida: document.getElementById('calibre-acometida').value
-                },
-                equipoMedicion: document.getElementById('equipo-medicion').value,
-                observacionesMediciones: document.getElementById('observaciones-mediciones').value,
-                // Fotos
-                fotos: photos.slice(),
-                observacionesFotos: document.getElementById('observaciones-fotos').value,
-                // Conclusión
-                observacionesGenerales: document.getElementById('observaciones-generales').value,
-                recomendaciones: document.getElementById('recomendaciones').value,
-                viabilidad: document.getElementById('viabilidad').value,
-                // Metadata
-                id: Date.now(),
-                creadoEn: new Date().toISOString()
-            };
+        if (btnGuardar) {
+            btnGuardar.addEventListener('click', () => {
+                const data = recolectarDatos();
+                const visitas = JSON.parse(localStorage.getItem('visitas_solar') || '[]');
+                visitas.push(data);
+                localStorage.setItem('visitas_solar', JSON.stringify(visitas));
+                showToast('Visita guardada ✓', 'success');
+                updateConfigInfo();
+            });
+        }
+
+        if (btnExcel) {
+            btnExcel.addEventListener('click', () => {
+                const data = recolectarDatos();
+                generarExcel(data);
+            });
+        }
+    }
+
+    function generarExcel(data) {
+        const clienteRows = [
             ['DATOS DEL CLIENTE'],
             ['Campo', 'Valor'],
             ['Fecha', data.fecha],
@@ -774,53 +741,19 @@
             ['Coordenadas GPS', data.gps],
             ['Asesor', data.responsableVisita],
             ['Tipo de Cliente', data.tipoCliente],
-<<<<<<< HEAD
             ['Tarifa CFE', data.tarifaCFE],
-            ['Proveedor de Energía', data.proveedorEnergia],
-            ['No. de Servicio', data.numeroServicio],
+            ['Kilovatios Contratados (kW)', data.kilovatiosContratados],
+            ['¿Requiere Baterías?', data.requiereBaterias ? 'Sí' : 'No'],
+            ['Horas de Respaldo', data.requiereBaterias ? data.horasRespaldo : ''],
             ['Consumo Bimestral (kWh)', data.consumoBimestral],
             ['Pago Bimestral (COP)', data.pagoBimestral],
             ['Motivo / Interés', data.motivo],
-            [''],
-            ['ANÁLISIS SOLAR GPS'],
-            ['Latitud', data.analisisSolar.latitud],
-            ['Longitud', data.analisisSolar.longitud],
-            ['Precisión GPS', data.analisisSolar.precision],
-            ['Altitud', data.analisisSolar.altitud],
-            ['Amanecer', data.analisisSolar.amanecer],
-            ['Azimut Amanecer', data.analisisSolar.amanecerAzimut],
-            ['Cénit Solar (Máx. Plenitud)', data.analisisSolar.cenitSolar],
-            ['Elevación Máxima', data.analisisSolar.cenitElevacion],
-            ['Atardecer', data.analisisSolar.atardecer],
-            ['Azimut Atardecer', data.analisisSolar.atardecerAzimut],
-            ['Horas de Luz Solar', data.analisisSolar.horasLuz],
-            ['Orientación Óptima Paneles', data.analisisSolar.orientacionOptima],
-            ['Inclinación Óptima', data.analisisSolar.inclinacionOptima],
-            ['Posición Solar al Momento', data.analisisSolar.posicionActual],
             [''],
             ['CONCLUSIONES'],
             ['Viabilidad', data.viabilidad],
             ['Observaciones', data.observacionesGenerales],
             ['Recomendaciones', data.recomendaciones]
-=======
-            ['Kilovatios Contratados (kW)', data.kilovatiosContratados],
-            ['¿Requiere Baterías?', data.requiereBaterias ? 'Sí' : 'No'],
-            ['Horas de Respaldo', data.requiereBaterias ? data.horasRespaldo : ''],
-            ['No. Servicio CFE', data.numeroServicioCFE],
-            ['Consumo Bimestral (kWh)', data.consumoBimestral],
-            ['Pago Bimestral ($)', data.pagoBimestral],
-            ['Motivo / Interés', data.motivo],
-            [''],
-            ['CONCLUSIONES'],
-            ['Viabilidad', data.viabilidad],
-            ['Presupuesto Estimado ($)', data.presupuestoEstimado],
-            ['ROI Estimado (años)', data.roiEstimado],
-            ['Observaciones', data.observacionesGenerales],
-            ['Recomendaciones', data.recomendaciones],
-            ['Firmante', data.nombreFirmante]
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
         ];
-
         // Hoja 2: Evaluación del Sitio (Checklist)
         const checkLabels = {
             'techo-estado': 'Estado general del techo',
@@ -834,13 +767,9 @@
             'tierra': 'Sistema de tierra física',
             'protecciones': 'Protecciones eléctricas',
             'ruta-cable': 'Ruta de cableado',
-<<<<<<< HEAD
             'contrato-proveedor': 'Contrato vigente con el proveedor',
             'acceso-medidor': 'Acceso al medidor de energía',
-=======
-            'contrato-cfe': 'Contrato de CFE vigente',
-            'acceso-medidor': 'Acceso al medidor de CFE',
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
+            'andamio': 'Requiere andamio',
             'acceso-techo': 'Acceso al techo',
             'acceso-vehicular': 'Acceso vehicular'
         };
@@ -849,7 +778,7 @@
             ['Elemento', 'Estado']
         ];
         for (const [key, label] of Object.entries(checkLabels)) {
-            checkRows.push([label, (data.checklist[key] || 'Sin evaluar').toUpperCase()]);
+            checkRows.push([label, (data.checklist?.[key] || 'Sin evaluar').toUpperCase()]);
         }
         checkRows.push([''], ['Tipo de Techo', data.tipoTecho]);
         checkRows.push(['Observaciones', data.observacionesChecklist]);
@@ -858,33 +787,25 @@
         const medRows = [
             ['MEDICIONES DEL SITIO'], [''],
             ['Parámetro', 'Valor', 'Unidad'],
-            ['Largo del techo', data.mediciones.areaLargo, 'm'],
-            ['Ancho del techo', data.mediciones.areaAncho, 'm'],
-            ['Área útil disponible', data.mediciones.areaUtil, 'm²'],
-            ['Inclinación del techo', data.mediciones.inclinacionTecho, '°'],
-            ['Azimut / Orientación', data.mediciones.azimut, '°'],
-            ['Altura del techo', data.mediciones.alturaTecho, 'm'],
-            ['Horas Solar Pico', data.mediciones.horasSolarPico, 'HSP'],
-            ['Irradiancia', data.mediciones.irradiancia, 'kWh/m²/día'],
-            ['Voltaje en Red', data.mediciones.voltajeRed, 'V'],
-            ['Interruptor Principal', data.mediciones.capacidadInterruptor, 'A'],
-            ['Calibre Acometida', data.mediciones.calibreAcometida, ''],
+            ['Largo del techo', data.mediciones?.areaLargo, 'm'],
+            ['Ancho del techo', data.mediciones?.areaAncho, 'm'],
+            ['Área útil disponible', data.mediciones?.areaUtil, 'm²'],
+            ['Inclinación del techo', data.mediciones?.inclinacionTecho, '°'],
+            ['Azimut / Orientación', data.mediciones?.azimut, '°'],
+            ['Altura del techo', data.mediciones?.alturaTecho, 'm'],
+            ['Horas Solar Pico', data.mediciones?.horasSolarPico, 'HSP'],
+            ['Irradiancia', data.mediciones?.irradiancia, 'kWh/m²/día'],
+            ['Voltaje en Red', data.mediciones?.voltajeRed, 'V'],
+            ['Interruptor Principal', data.mediciones?.capacidadInterruptor, 'A'],
+            ['Calibre Acometida', data.mediciones?.calibreAcometida, ''],
             [''],
-<<<<<<< HEAD
-=======
-            ['PROPUESTA PRELIMINAR'],
-            ['Paneles Estimados', data.mediciones.panelesEstimados, 'pzas'],
-            ['Potencia del Sistema', data.mediciones.potenciaSistema, 'kWp'],
-            ['Generación Estimada', data.mediciones.generacionEstimada, 'kWh/mes'],
-            [''],
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
+            ['Distancia tablero → paneles', data.distanciaTableroPaneles, 'm'],
+            ['Potencia transformador', data.transformadorPotencia, 'kVA'],
             ['Equipo de Medición', data.equipoMedicion],
             ['Observaciones', data.observacionesMediciones]
         ];
 
-        // Crear libro
         const wb = XLSX.utils.book_new();
-
         const ws1 = XLSX.utils.aoa_to_sheet(clienteRows);
         ws1['!cols'] = [{ wch: 28 }, { wch: 50 }];
         XLSX.utils.book_append_sheet(wb, ws1, 'Cliente');
@@ -897,9 +818,95 @@
         ws3['!cols'] = [{ wch: 28 }, { wch: 15 }, { wch: 12 }];
         XLSX.utils.book_append_sheet(wb, ws3, 'Mediciones');
 
-        const fileName = 'Visita_Solar_' + data.cliente.replace(/\s+/g, '_') + '_' + data.fecha + '.xlsx';
+        const fileName = 'Visita_Solar_' + (data.cliente || 'cliente').replace(/\s+/g, '_') + '_' + data.fecha + '.xlsx';
         XLSX.writeFile(wb, fileName);
         showToast('📊 Excel descargado: ' + fileName, 'success');
+    }
+    // ========== RECOLECTAR DATOS ==========
+    function recolectarDatos() {
+        const requiereBaterias = document.getElementById('requiere-baterias')?.checked || false;
+        const data = {
+            // Datos del Cliente
+            fecha: document.getElementById('fecha').value,
+            hora: document.getElementById('hora').value,
+            cliente: document.getElementById('empresa').value,
+            email: document.getElementById('email-cliente').value,
+            telefono: document.getElementById('telefono').value,
+            direccion: document.getElementById('direccion').value,
+            gps: document.getElementById('gps-coords').value,
+            responsableVisita: document.getElementById('responsable-visita').value,
+            tipoCliente: document.getElementById('tipo-cliente').value,
+            tarifaCFE: document.getElementById('tarifa-cfe').value,
+            kilovatiosContratados: document.getElementById('kilovatios-contratados').value,
+            requiereBaterias,
+            horasRespaldo: requiereBaterias ? document.getElementById('horas-respaldo')?.value : '',
+            consumoBimestral: document.getElementById('consumo-bimestral').value,
+            pagoBimestral: document.getElementById('pago-bimestral').value,
+            motivo: document.getElementById('motivo').value,
+
+            // Checklist
+            checklist: {},
+            tipoTecho: document.getElementById('tipo-techo').value,
+            observacionesChecklist: document.getElementById('observaciones-checklist').value,
+            distanciaTableroPaneles: document.getElementById('distancia-tablero-paneles')?.value || '',
+            transformadorPotencia: document.getElementById('transformador-potencia')?.value || '',
+            // Mediciones
+            mediciones: {
+                inclinacionTecho: document.getElementById('inclinacion-techo').value,
+                azimut: document.getElementById('azimut').value,
+                alturaTecho: document.getElementById('altura-techo').value,
+                horasSolarPico: document.getElementById('horas-solar-pico').value,
+                irradiancia: document.getElementById('irradiancia').value,
+                voltajeRed: document.getElementById('voltaje-red').value,
+                capacidadInterruptor: document.getElementById('capacidad-interruptor').value,
+                calibreAcometida: document.getElementById('calibre-acometida').value
+            },
+            equipoMedicion: document.getElementById('equipo-medicion').value,
+            observacionesMediciones: document.getElementById('observaciones-mediciones').value,
+            // Fotos
+            fotos: photos.slice(),
+            observacionesFotos: document.getElementById('observaciones-fotos').value,
+            // Conclusión
+            observacionesGenerales: document.getElementById('observaciones-generales').value,
+            recomendaciones: document.getElementById('recomendaciones').value,
+            viabilidad: document.getElementById('viabilidad').value,
+            // Metadata
+            id: Date.now(),
+            creadoEn: new Date().toISOString()
+        };
+
+        // Checklist radios
+        document.querySelectorAll('input[type="radio"][name^="check-"]:checked').forEach(r => {
+            data.checklist[r.name.replace('check-', '')] = r.value;
+        });
+
+        // Áreas disponibles dinámicas
+        data.areas = [];
+        const areasContainer = document.getElementById('areas-container');
+        if (areasContainer) {
+            areasContainer.querySelectorAll('.area-item').forEach(div => {
+                const index = div.dataset.index;
+                if (!index) return;
+                const largo = document.getElementById(`area-${index}-largo`)?.value || '';
+                const ancho = document.getElementById(`area-${index}-ancho`)?.value || '';
+                const util = document.getElementById(`area-${index}-util`)?.value || '';
+                const desc = document.getElementById(`area-${index}-descripcion`)?.value || '';
+                data.areas.push({
+                    descripcion: desc,
+                    largo,
+                    ancho,
+                    areaUtil: util
+                });
+            });
+        }
+
+        // Para compatibilidad con Excel/historial, tomar Área 1 como principal
+        const area1 = data.areas[0] || {};
+        data.mediciones.areaLargo = area1.largo || '';
+        data.mediciones.areaAncho = area1.ancho || '';
+        data.mediciones.areaUtil = area1.areaUtil || '';
+
+        return data;
     }
 
     function exportarTodoExcel() {
@@ -911,50 +918,30 @@
 
         const rows = [
             ['ID', 'Fecha', 'Hora', 'Cliente', 'Email', 'Teléfono', 'Dirección', 'GPS',
-<<<<<<< HEAD
-                'Asesor', 'Tipo Cliente', 'Tarifa CFE', 'Proveedor Energía', 'No. Servicio',
+                'Asesor', 'Tipo Cliente', 'Tarifa CFE', 'kW Contratados',
+                'Requiere Baterías', 'Horas Respaldo',
                 'Consumo Bimestral kWh', 'Pago Bimestral COP',
-                'Amanecer', 'Cénit Solar', 'Atardecer', 'Horas Luz',
-                'Orient. Óptima', 'Inclin. Óptima',
                 'Tipo Techo',
+                'Distancia tablero-paneles (m)', 'Potencia transformador (kVA)',
                 'Área Útil m²', 'Inclinación°', 'Azimut°', 'HSP', 'Irradiancia',
                 'Voltaje Red V',
                 'Viabilidad',
                 'Observaciones', 'Recomendaciones']
-=======
-                'Asesor', 'Tipo Cliente', 'Tarifa CFE', 'No. Servicio CFE',
-                'Consumo Bimestral kWh', 'Pago Bimestral $', 'Tipo Techo',
-                'Área Útil m²', 'Inclinación°', 'Azimut°', 'HSP', 'Irradiancia',
-                'Voltaje Red V', 'Paneles', 'Potencia kWp', 'Generación kWh/mes',
-                'Viabilidad', 'Presupuesto $', 'ROI años',
-                'Observaciones', 'Recomendaciones', 'Firmante']
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
         ];
 
         visitas.forEach(v => {
             rows.push([
                 v.id, v.fecha, v.hora, v.cliente, v.email, v.telefono, v.direccion, v.gps,
-<<<<<<< HEAD
-                v.responsableVisita, v.tipoCliente, v.tarifaCFE, v.proveedorEnergia, v.numeroServicio,
+                v.responsableVisita, v.tipoCliente, v.tarifaCFE, v.kilovatiosContratados,
+                v.requiereBaterias ? 'Sí' : 'No', v.requiereBaterias ? v.horasRespaldo : '',
                 v.consumoBimestral, v.pagoBimestral,
-                v.analisisSolar?.amanecer, v.analisisSolar?.cenitSolar, v.analisisSolar?.atardecer,
-                v.analisisSolar?.horasLuz, v.analisisSolar?.orientacionOptima, v.analisisSolar?.inclinacionOptima,
                 v.tipoTecho,
+                v.distanciaTableroPaneles, v.transformadorPotencia,
                 v.mediciones?.areaUtil, v.mediciones?.inclinacionTecho, v.mediciones?.azimut,
                 v.mediciones?.horasSolarPico, v.mediciones?.irradiancia,
                 v.mediciones?.voltajeRed,
                 v.viabilidad,
                 v.observacionesGenerales, v.recomendaciones
-=======
-                v.responsableVisita, v.tipoCliente, v.tarifaCFE, v.numeroServicioCFE,
-                v.consumoBimestral, v.pagoBimestral, v.tipoTecho,
-                v.mediciones?.areaUtil, v.mediciones?.inclinacionTecho, v.mediciones?.azimut,
-                v.mediciones?.horasSolarPico, v.mediciones?.irradiancia,
-                v.mediciones?.voltajeRed, v.mediciones?.panelesEstimados,
-                v.mediciones?.potenciaSistema, v.mediciones?.generacionEstimada,
-                v.viabilidad, v.presupuestoEstimado, v.roiEstimado,
-                v.observacionesGenerales, v.recomendaciones, v.nombreFirmante
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
             ]);
         });
 
@@ -965,9 +952,6 @@
         showToast('📊 Excel con todas las visitas descargado', 'success');
     }
 
-<<<<<<< HEAD
-
-=======
     // ========== GOOGLE SHEETS SYNC ==========
     function sincronizarGoogleSheets() {
         const url = localStorage.getItem('sheets-url');
@@ -1014,7 +998,6 @@
             .then(() => showToast('✅ Datos enviados a Google Sheets', 'success'))
             .catch(() => showToast('Error al sincronizar', 'error'));
     }
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
 
     // ========== HISTORIAL ==========
     function renderHistorial() {
@@ -1083,8 +1066,6 @@
 
     // ========== CONFIGURACIÓN ==========
     function initConfig() {
-<<<<<<< HEAD
-=======
         const savedUrl = localStorage.getItem('sheets-url');
         if (savedUrl) document.getElementById('sheets-url').value = savedUrl;
 
@@ -1093,7 +1074,6 @@
             showToast('Configuración guardada ✓', 'success');
         });
 
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
         document.getElementById('btn-borrar-todo').addEventListener('click', () => {
             if (!confirm('¿Borrar TODOS los datos? Esta acción no se puede deshacer.')) return;
             if (!confirm('¿Estás seguro?')) return;

@@ -75,8 +75,6 @@
             <!-- PASO 1: Datos del Cliente y Sitio -->
             <section id="step-1" class="form-step active">
                 <h2>📋 Datos del Cliente</h2>
-<<<<<<< HEAD
-
                 <!-- Tarjeta 1: Info de la Visita -->
                 <div class="checklist-category card-sky">
                     <h3>📅 Información de la Visita</h3>
@@ -114,10 +112,8 @@
                         <select id="tipo-cliente">
                             <option value="">Seleccionar...</option>
                             <option value="residencial">🏠 Residencial</option>
-                            <option value="comercial">🏢 Comercial</option>
+                            <option value="domestica">🏡 Doméstica</option>
                             <option value="industrial">🏭 Industrial</option>
-                            <option value="agricola">🌾 Agrícola / Bombeo</option>
-                            <option value="otro">Otro</option>
                         </select>
                     </div>
                 </div>
@@ -160,6 +156,18 @@
                         </select>
                     </div>
                     <div class="form-group">
+                        <label for="kilovatios-contratados">Kilovatios contratados (kW)</label>
+                        <input type="number" id="kilovatios-contratados" placeholder="Ej: 10" min="0" step="0.01">
+                        <small>Introduce los kilovatios contratados (kW)</small>
+                    </div>
+                    <div class="form-group">
+                        <label><input type="checkbox" id="requiere-baterias"> ¿Requiere baterías?</label>
+                    </div>
+                    <div class="form-group" id="horas-respaldo-group" style="display:none;">
+                        <label for="horas-respaldo">¿Cuántas horas de respaldo?</label>
+                        <input type="number" id="horas-respaldo" min="0" step="0.1" placeholder="Ej: 4">
+                    </div>
+                    <div class="form-group">
                         <label for="consumo-bimestral">Consumo Bimestral Promedio (kWh)</label>
                         <input type="number" id="consumo-bimestral" step="1" placeholder="Ej: 850">
                     </div>
@@ -172,77 +180,6 @@
                         <textarea id="motivo" rows="3" placeholder="Ahorro en recibo, independencia energética, proyecto nuevo..."></textarea>
                     </div>
                 </div>
-
-=======
-                <div class="form-group">
-                    <label for="fecha">Fecha de Visita</label>
-                    <input type="date" id="fecha" required>
-                </div>
-                <div class="form-group">
-                    <label for="hora">Hora</label>
-                    <input type="time" id="hora" required>
-                </div>
-                <div class="form-group">
-                    <label for="empresa">Nombre del Cliente</label>
-                    <input type="text" id="empresa" placeholder="Nombre completo del cliente" required>
-                </div>
-                <div class="form-group">
-                    <label for="email-cliente">Correo Electrónico</label>
-                    <input type="email" id="email-cliente" placeholder="cliente@email.com">
-                </div>
-                <div class="form-group">
-                    <label for="telefono">Teléfono</label>
-                    <input type="tel" id="telefono" placeholder="10 dígitos">
-                </div>
-                <div class="form-group">
-                    <label for="direccion">Dirección de Instalación</label>
-                    <input type="text" id="direccion" placeholder="Calle, número, colonia, ciudad">
-                </div>
-                <div class="form-group">
-                    <label>📍 Ubicación GPS</label>
-                    <div class="gps-container">
-                        <input type="text" id="gps-coords" readonly placeholder="Presiona obtener ubicación">
-                        <button type="button" id="btn-gps" class="btn btn-secondary">📍 Obtener</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="responsable-visita">Asesor / Responsable de la Visita</label>
-                    <input type="text" id="responsable-visita" placeholder="Tu nombre">
-                </div>
-                <div class="form-group">
-                    <label for="tipo-cliente">Tipo de Cliente</label>
-                    <select id="tipo-cliente">
-                        <option value="">Seleccionar...</option>
-                        <option value="residencial">🏠 Residencial</option>
-                        <option value="comercial">🏢 Comercial</option>
-                        <option value="industrial">🏭 Industrial</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="kilovatios-contratados">Kilovatios contratados (kW)</label>
-                    <input type="number" id="kilovatios-contratados" placeholder="Ej: 10" min="0" step="0.01">
-                    <small>Introduce los kilovatios contratados (kW)</small>
-                </div>
-                <div class="form-group">
-                    <label><input type="checkbox" id="requiere-baterias"> ¿Requiere baterías?</label>
-                </div>
-                <div class="form-group" id="horas-respaldo-group" style="display:none;">
-                    <label for="horas-respaldo">¿Cuántas horas de respaldo?</label>
-                    <input type="number" id="horas-respaldo" min="0" step="0.1" placeholder="Ej: 4">
-                </div>
-                <div class="form-group">
-                    <label for="consumo-bimestral">Consumo Bimestral Promedio (kWh)</label>
-                    <input type="number" id="consumo-bimestral" step="1" placeholder="Ej: 850">
-                </div>
-                <div class="form-group">
-                    <label for="pago-bimestral">Pago Bimestral Promedio (COP)</label>
-                    <input type="number" id="pago-bimestral" step="0.01" placeholder="Ej: 350000">
-                </div>
-                <div class="form-group">
-                    <label for="motivo">Motivo / Interés del Cliente</label>
-                    <textarea id="motivo" rows="3" placeholder="Ahorro en recibo, independencia energética, proyecto nuevo..."></textarea>
-                </div>
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
                 <div class="form-actions">
                     <button type="button" class="btn btn-primary btn-next" data-next="2">Siguiente →</button>
                 </div>
@@ -254,11 +191,7 @@
                 <p class="hint">Evalúa las condiciones del sitio para la instalación solar</p>
 
                 <!-- ===== ANÁLISIS SOLAR GPS ===== -->
-<<<<<<< HEAD
-                <div class="checklist-category card-sky">
-=======
-                <div class="checklist-category solar-analysis-section">
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
+                <div class="checklist-category card-sky solar-analysis-section">
                     <h3>🛰️ Análisis Solar y Geolocalización</h3>
                     <p class="hint">Obtén las coordenadas y el análisis de trayectoria solar</p>
 
@@ -364,11 +297,7 @@
                     </div>
                 </div>
 
-<<<<<<< HEAD
                 <div class="checklist-category card-accent">
-=======
-                <div class="checklist-category">
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
                     <h3>🏠 Estructura del Techo</h3>
                     <div class="checklist-item">
                         <span>Estado general del techo</span>
@@ -404,7 +333,8 @@
                             <option value="losa-concreto">Losa de concreto</option>
                             <option value="lamina-metal">Lámina metálica</option>
                             <option value="lamina-galvanizada">Lámina galvanizada</option>
-                            <option value="teja">Teja</option>
+                            <option value="teja-zinc">Teja de zinc</option>
+                            <option value="teja-barro">Teja de barro</option>
                             <option value="domos">Domos / Tragaluces</option>
                             <option value="piso-tierra">Montaje en piso / tierra</option>
                             <option value="otro">Otro</option>
@@ -430,11 +360,7 @@
                     </div>
                 </div>
 
-<<<<<<< HEAD
                 <div class="checklist-category card-sky">
-=======
-                <div class="checklist-category">
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
                     <h3>☀️ Orientación y Exposición Solar</h3>
                     <div class="checklist-item">
                         <span>Orientación hacia el sur</span>
@@ -465,11 +391,7 @@
                     </div>
                 </div>
 
-<<<<<<< HEAD
                 <div class="checklist-category card-accent">
-=======
-                <div class="checklist-category">
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
                     <h3>⚡ Instalación Eléctrica Existente</h3>
                     <div class="checklist-item">
                         <span>Centro de carga / Tablero principal</span>
@@ -516,13 +438,26 @@
                             <label class="check-option na"><input type="radio" name="check-ruta-cable" value="na"><span>N/A</span></label>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label for="distancia-tablero-paneles">Distancia del tablero principal a posible ubicación de paneles (m)</label>
+                        <input type="number" id="distancia-tablero-paneles" step="0.1" placeholder="Ej: 12.5">
+                    </div>
+
+                    <!-- Transformador -->
+                    <div class="form-group">
+                        <label for="transformador-potencia">Potencia del transformador (kVA)</label>
+                        <input type="number" id="transformador-potencia" step="0.1" placeholder="Ej: 45">
+                    </div>
+                    <div class="form-group">
+                        <label>📸 Transformador (registro fotográfico)</label>
+                        <div style="display:flex; gap:0.6rem; margin-bottom:0.6rem; flex-wrap:wrap;">
+                            <input type="file" id="transformador-fotos" accept="image/*" multiple>
+                        </div>
+                        <p class="hint">Incluye placa de datos, vista general y acometidas.</p>
+                    </div>
                 </div>
 
-<<<<<<< HEAD
                 <div class="checklist-category card-sky">
-=======
-                <div class="checklist-category">
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
                     <h3>⚡ Proveedor de Energía</h3>
                     <div class="form-group" style="margin-top: 0.5rem;">
                         <label for="proveedor-energia">Nombre del Proveedor de Energía</label>
@@ -550,13 +485,14 @@
                         <label for="numero-servicio">No. de Servicio / Cuenta</label>
                         <input type="text" id="numero-servicio" placeholder="Número de cuenta o contrato">
                     </div>
+                    <div class="form-group">
+                        <label for="foto-recibo">📸 Foto del recibo de energía</label>
+                        <input type="file" id="foto-recibo" accept="image/*">
+                        <p class="hint">Toma foto nítida donde se vea el número de servicio y consumos.</p>
+                    </div>
                 </div>
 
-<<<<<<< HEAD
                 <div class="checklist-category card-accent">
-=======
-                <div class="checklist-category">
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
                     <h3>🔧 Acceso y Logística</h3>
                     <div class="checklist-item">
                         <span>Acceso al techo (escaleras, escalera marina)</span>
@@ -575,6 +511,17 @@
                             <label class="check-option mal"><input type="radio" name="check-acceso-vehicular" value="mal"><span>✗</span></label>
                             <label class="check-option na"><input type="radio" name="check-acceso-vehicular" value="na"><span>N/A</span></label>
                         </div>
+                    </div>
+                    <div class="checklist-item">
+                        <span>¿Se requiere andamio?</span>
+                        <div class="check-options">
+                            <label class="check-option bien"><input type="radio" name="check-andamio" value="si"><span>Sí</span></label>
+                            <label class="check-option na"><input type="radio" name="check-andamio" value="no"><span>No</span></label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="andamio-secciones">Si requiere andamio, ¿de cuántas secciones?</label>
+                        <input type="number" id="andamio-secciones" min="0" step="1" placeholder="Ej: 3">
                     </div>
                 </div>
 
@@ -596,26 +543,38 @@
 
                 <div class="mediciones-grid">
                     <div class="medicion-card">
-                        <h4>📐 Área Disponible</h4>
-                        <div class="form-group">
-                            <label for="area-largo">Largo del techo (m)</label>
-                            <input type="number" id="area-largo" step="0.1" placeholder="12.0">
+                        <h4>📐 Áreas Disponibles</h4>
+                        <p class="hint">Registra cada zona aprovechable para paneles (techo casa, bodega, parqueadero, etc.)</p>
+                        <div id="areas-container">
+                            <!-- Área 1 por defecto -->
+                            <div class="area-item" data-index="1">
+                                <div class="form-group">
+                                    <label for="area-1-descripcion">Descripción del área</label>
+                                    <input type="text" id="area-1-descripcion" placeholder="Ej: Techo principal casa">
+                                </div>
+                                <div class="form-group">
+                                    <label for="area-1-largo">Largo del techo (m)</label>
+                                    <input type="number" id="area-1-largo" step="0.1" placeholder="12.0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="area-1-ancho">Ancho del techo (m)</label>
+                                    <input type="number" id="area-1-ancho" step="0.1" placeholder="8.0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="area-1-util">Área útil disponible (m²)</label>
+                                    <input type="number" id="area-1-util" step="0.1" placeholder="80.0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="area-1-fotos">📸 Fotos del área</label>
+                                    <input type="file" id="area-1-fotos" accept="image/*" multiple>
+                                </div>
+                                <hr style="margin:0.8rem 0; border:none; border-top:1px dashed var(--border);">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="area-ancho">Ancho del techo (m)</label>
-                            <input type="number" id="area-ancho" step="0.1" placeholder="8.0">
-                        </div>
-                        <div class="form-group">
-                            <label for="area-util">Área útil disponible (m²)</label>
-                            <input type="number" id="area-util" step="0.1" placeholder="80.0">
-                        </div>
+                        <button type="button" id="btn-add-area" class="btn btn-secondary btn-small">➕ Agregar otra área</button>
                     </div>
 
-<<<<<<< HEAD
                     <div class="medicion-card card-accent">
-=======
-                    <div class="medicion-card">
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
                         <h4>📐 Inclinación y Orientación</h4>
                         <div class="form-group">
                             <label for="inclinacion-techo">Inclinación del techo (°)</label>
@@ -643,11 +602,7 @@
                         </div>
                     </div>
 
-<<<<<<< HEAD
                     <div class="medicion-card card-accent">
-=======
-                    <div class="medicion-card">
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
                         <h4>⚡ Eléctrico Existente</h4>
                         <div class="form-group">
                             <label for="voltaje-red">Voltaje en Red (V)</label>
@@ -684,7 +639,6 @@
 
             <!-- PASO 4 (FINAL): Conclusión -->
             <section id="step-4" class="form-step">
-<<<<<<< HEAD
                 <h2>📷 Evidencia Fotográfica y Conclusión</h2>
 
                 <!-- Tarjeta 1: Fotos -->
@@ -747,62 +701,6 @@
                             <option value="no-viable">🔴 No Viable - No se recomienda</option>
                         </select>
                     </div>
-=======
-                <h2>📷 Evidencia Fotográfica</h2>
-                <p class="hint">Fotos del techo, medidor, tablero, sombras (máx. 10)</p>
-
-                <div class="photo-labels">
-                    <p class="hint"><strong>Fotos sugeridas:</strong> 1) Techo completo, 2) Medidor, 3) Centro de carga, 4) Ruta de cableado, 5) Sombras/obstáculos, 6) Recibo de luz</p>
-                </div>
-
-                <div class="photo-controls">
-                    <button type="button" id="btn-take-photo" class="btn btn-primary">
-                        📸 Tomar Foto
-                    </button>
-                    <button type="button" id="btn-upload-photo" class="btn btn-secondary">
-                        📁 Subir desde Galería
-                    </button>
-                    <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none">
-                    <input type="file" id="gallery-input" accept="image/*" multiple style="display:none">
-                </div>
-
-                <div id="photo-gallery" class="photo-gallery">
-                    <div class="photo-placeholder">
-                        <span>📷</span>
-                        <p>Aún no hay fotos</p>
-                    </div>
-                </div>
-
-                <div class="form-group" style="margin-top: 1rem;">
-                    <label for="observaciones-fotos">Descripción de Evidencias</label>
-                    <textarea id="observaciones-fotos" rows="3" placeholder="Describe lo que muestra cada foto..."></textarea>
-                </div>
-
-                <hr style="margin: 1.5rem 0; border: none; border-top: 2px solid var(--border);">
-
-                <h3 style="color: var(--primary); margin-bottom: 1rem;">📝 Conclusión de la Visita</h3>
-
-                <div class="form-group">
-                    <label for="observaciones-generales">Observaciones Generales</label>
-                    <textarea id="observaciones-generales" rows="4" placeholder="Conclusiones de la visita, viabilidad del proyecto..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="recomendaciones">Recomendaciones para el Cliente</label>
-                    <textarea id="recomendaciones" rows="4" placeholder="Sistema recomendado, trabajos previos, plazos estimados..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="viabilidad">Viabilidad del Proyecto</label>
-                    <select id="viabilidad">
-                        <option value="">Seleccionar...</option>
-                        <option value="excelente">🟢 Excelente - Condiciones ideales</option>
-                        <option value="bueno">🔵 Bueno - Viable con mínimos ajustes</option>
-                        <option value="regular">🟡 Regular - Requiere trabajos adicionales</option>
-                        <option value="dificil">🟠 Difícil - Obstáculos significativos</option>
-                        <option value="no-viable">🔴 No Viable - No se recomienda</option>
-                    </select>
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
                 </div>
 
                 <div class="form-actions final-actions">
@@ -824,10 +722,6 @@
         <!-- VISTA: Configuración -->
         <div id="view-configuracion" class="view">
             <h2>⚙️ Configuración</h2>
-<<<<<<< HEAD
-            <div class="config-section card-accent">
-                <h3>📱 Información de la App</h3>
-=======
             <div class="config-section">
                 <h3>☁️ Google Sheets</h3>
                 <p class="hint">Pega la URL de tu Google Apps Script para sincronización automática</p>
@@ -838,7 +732,7 @@
                 <button type="button" id="btn-guardar-config" class="btn btn-primary">Guardar Configuración</button>
             </div>
             <div class="config-section">
-                <h3>� OneDrive / Microsoft 365</h3>
+                <h3>💼 OneDrive / Microsoft 365</h3>
                 <p class="hint">Sincroniza las visitas directamente con el OneDrive empresarial usando Power Automate</p>
                 <div class="form-group">
                     <label for="onedrive-url">URL del Flow de Power Automate</label>
@@ -861,9 +755,8 @@
                     </div>
                 </details>
             </div>
-            <div class="config-section">
-                <h3>�📱 Información de la App</h3>
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
+            <div class="config-section card-accent">
+                <h3>📱 Información de la App</h3>
                 <p>Versión: 2.1.0 — Solix SAS</p>
                 <p>Visitas guardadas: <span id="total-visitas">0</span></p>
                 <button type="button" id="btn-borrar-todo" class="btn btn-danger">🗑️ Borrar Todos los Datos</button>
@@ -896,36 +789,19 @@
     <!-- Scripts -->
     <script src="js/app.js"></script>
 
-<<<<<<< HEAD
-    <!-- Service Worker -->
     <script>
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').then(function(reg) {
-=======
-    <!-- Forzar actualización del Service Worker -->
-    <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(function(reg) {
-            // Verificar actualizaciones inmediatamente
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
             reg.update();
             reg.addEventListener('updatefound', function() {
                 var newSW = reg.installing;
                 newSW.addEventListener('statechange', function() {
                     if (newSW.state === 'activated') {
-<<<<<<< HEAD
-=======
-                        // Nueva versión activada, recargar
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
                         window.location.reload();
                     }
                 });
             });
         });
-<<<<<<< HEAD
-=======
-        // Si el SW toma control, recargar para usar la nueva versión
->>>>>>> 5d7a901 (Modificaciones: kilovatios contratados, tipos de cliente, baterías y horas de respaldo)
         navigator.serviceWorker.addEventListener('controllerchange', function() {
             window.location.reload();
         });
