@@ -18,6 +18,7 @@
         initSteps();
         initGPS();
         initPhotos();
+        initTechoPhotos();
         initFirma();
         initActions();
         initConfig();
@@ -30,6 +31,35 @@
                 horasRespaldoGroup.style.display = this.checked ? '' : 'none';
             });
         }
+    }
+    // ========== FOTOS DEL TECHO ==========
+    function initTechoPhotos() {
+        const techoCamera = document.getElementById('techo-camera-input');
+        const techoGallery = document.getElementById('techo-gallery-input');
+        const btnCamera = document.getElementById('btn-techo-camara');
+        const btnGallery = document.getElementById('btn-techo-galeria');
+        if (btnCamera) btnCamera.addEventListener('click', () => techoCamera.click());
+        if (btnGallery) btnGallery.addEventListener('click', () => techoGallery.click());
+        if (techoCamera) techoCamera.addEventListener('change', handleTechoPhotos);
+        if (techoGallery) techoGallery.addEventListener('change', handleTechoPhotos);
+    }
+
+    function handleTechoPhotos(e) {
+        const files = e.target.files;
+        if (!files.length) return;
+        if (techoPhotos.length + files.length > 10) {
+            showToast('Máximo 10 fotos del techo permitidas', 'error');
+            return;
+        }
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                techoPhotos.push(ev.target.result);
+                renderTechoPhotos && renderTechoPhotos();
+            };
+            reader.readAsDataURL(file);
+        });
+        e.target.value = '';
     }
 
     // ========== FECHA/HORA ACTUAL ==========
@@ -558,36 +588,40 @@
     }
 
     // ========== FOTOS DEL TECHO ==========
-    function initTechoPhotos() {
-        const techoCamera = document.getElementById('techo-camera-input');
-        const techoGallery = document.getElementById('techo-gallery-input');
-        
-        const btnCamera = document.getElementById('btn-techo-camara');
-        const btnGallery = document.getElementById('btn-techo-galeria');
-        
-        if (btnCamera) btnCamera.addEventListener('click', () => techoCamera.click());
-        if (btnGallery) btnGallery.addEventListener('click', () => techoGallery.click());
-        
-        if (techoCamera) techoCamera.addEventListener('change', handleTechoPhotos);
-        if (techoGallery) techoGallery.addEventListener('change', handleTechoPhotos);
-    }
-
-    function handleTechoPhotos(e) {
-        const files = e.target.files;
-        if (!files.length) return;
-        if (techoPhotos.length + files.length > 5) {
-            showToast('Máximo 5 fotos del techo permitidas', 'error');
-            return;
-        }
-        Array.from(files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                compressImage(ev.target.result, 800, 0.7, (compressed) => {
-                    techoPhotos.push(compressed);
-                    renderTechoPhotos();
+    function recolectarDatos() {
+        // ...existing code...
+        // Áreas disponibles dinámicas
+        data.areas = [];
+        const areasContainer = document.getElementById('areas-container');
+        if (areasContainer) {
+            areasContainer.querySelectorAll('.area-item').forEach(div => {
+                const index = div.dataset.index;
+                if (!index) return;
+                const largo = document.getElementById(`area-${index}-largo`)?.value || '';
+                const ancho = document.getElementById(`area-${index}-ancho`)?.value || '';
+                const util = document.getElementById(`area-${index}-util`)?.value || '';
+                const desc = document.getElementById(`area-${index}-descripcion`)?.value || '';
+                data.areas.push({
+                    descripcion: desc,
+                    largo,
+                    ancho,
+                    areaUtil: util
                 });
-            };
-            reader.readAsDataURL(file);
+            });
+        }
+
+        // Para compatibilidad con Excel/historial, tomar Área 1 como principal
+        const area1 = data.areas[0] || {};
+        data.mediciones.areaLargo = area1.largo || '';
+        data.mediciones.areaAncho = area1.ancho || '';
+        data.mediciones.areaUtil = area1.areaUtil || '';
+
+        // Incluir fotos
+        data.fotosTecho = techoPhotos.slice();
+        data.fotosGenerales = photos.slice();
+
+        return data;
+    }
         });
         e.target.value = '';
     }
@@ -630,47 +664,88 @@
         img.src = dataUrl;
     }
 
-    function renderPhotos() {
-        const gallery = document.getElementById('photo-gallery');
-        if (photos.length === 0) {
-            gallery.innerHTML = '<div class="photo-placeholder"><span>📷</span><p>Aún no hay fotos</p></div>';
-            return;
-        }
-        gallery.innerHTML = photos.map((photo, i) =>
-            '<div class="photo-item">' +
-            '<img src="' + photo + '" alt="Foto ' + (i + 1) + '">' +
-            '<button class="photo-delete" data-index="' + i + '">✕</button>' +
-            '<span class="photo-number">' + (i + 1) + '/' + photos.length + '</span>' +
-            '</div>'
-        ).join('');
+    async function generarExcel(data) {
+        const workbook = new ExcelJS.Workbook();
+        const ws = workbook.addWorksheet('Visita Técnica');
+        ws.properties.defaultColWidth = 30;
+        ws.columns = [
+            { header: 'Campo', key: 'campo', width: 30 },
+            { header: 'Valor', key: 'valor', width: 50 }
+        ];
 
-        gallery.querySelectorAll('.photo-delete').forEach(btn => {
-            btn.addEventListener('click', () => {
-                photos.splice(parseInt(btn.dataset.index), 1);
-                renderPhotos();
+        // Datos principales
+        ws.addRow(['Cliente', data.cliente]);
+        ws.addRow(['Dirección', data.direccion]);
+        ws.addRow(['Fecha', data.fecha]);
+        ws.addRow(['Hora', data.hora]);
+        ws.addRow(['Responsable', data.responsableVisita]);
+        ws.addRow(['Email', data.email]);
+        ws.addRow(['Teléfono', data.telefono]);
+        ws.addRow(['Tipo Cliente', data.tipoCliente]);
+        ws.addRow(['Tarifa CFE', data.tarifaCFE]);
+        ws.addRow(['kW Contratados', data.kilovatiosContratados]);
+        ws.addRow(['Requiere Baterías', data.requiereBaterias ? 'Sí' : 'No']);
+        ws.addRow(['Horas Respaldo', data.horasRespaldo]);
+        ws.addRow(['Consumo Bimestral', data.consumoBimestral]);
+        ws.addRow(['Pago Bimestral', data.pagoBimestral]);
+        ws.addRow(['Motivo', data.motivo]);
+        ws.addRow(['Tipo Techo', data.tipoTecho]);
+        ws.addRow(['Distancia tablero-paneles', data.distanciaTableroPaneles]);
+        ws.addRow(['Potencia transformador', data.transformadorPotencia]);
+        ws.addRow(['Área Útil', data.mediciones?.areaUtil]);
+        ws.addRow(['Inclinación', data.mediciones?.inclinacionTecho]);
+        ws.addRow(['Azimut', data.mediciones?.azimut]);
+        ws.addRow(['Altura Techo', data.mediciones?.alturaTecho]);
+        ws.addRow(['Horas Solar Pico', data.mediciones?.horasSolarPico]);
+        ws.addRow(['Irradiancia', data.mediciones?.irradiancia]);
+        ws.addRow(['Voltaje Red', data.mediciones?.voltajeRed]);
+        ws.addRow(['Interruptor Principal', data.mediciones?.capacidadInterruptor]);
+        ws.addRow(['Calibre Acometida', data.mediciones?.calibreAcometida]);
+        ws.addRow(['Equipo de Medición', data.equipoMedicion]);
+        ws.addRow(['Observaciones Mediciones', data.observacionesMediciones]);
+        ws.addRow(['Viabilidad', data.viabilidad]);
+        ws.addRow(['Observaciones Generales', data.observacionesGenerales]);
+        ws.addRow(['Recomendaciones', data.recomendaciones]);
+
+        // Espacio antes de imágenes
+        ws.addRow([]);
+        ws.addRow(['Fotos del Techo']);
+
+        // Insertar fotos del techo
+        let rowFotoTecho = ws.lastRow.number + 1;
+        for (let i = 0; i < (data.fotosTecho || []).length; i++) {
+            const base64 = data.fotosTecho[i];
+            if (!base64) continue;
+            const imageId = workbook.addImage({ base64, extension: 'jpeg' });
+            ws.addRow([`Foto Techo ${i + 1}`]);
+            ws.addImage(imageId, {
+                tl: { col: 1, row: rowFotoTecho },
+                ext: { width: 200, height: 120 }
             });
-        });
-    }
-
-    // ========== FIRMA DIGITAL ==========
-    function initFirma() {
-        firmaCanvas = document.getElementById('firma-canvas');
-        if (!firmaCanvas) return;
-        firmaCtx = firmaCanvas.getContext('2d');
-
-        function resizeCanvas() {
-            const container = firmaCanvas.parentElement;
-            firmaCanvas.width = container.offsetWidth;
-            firmaCanvas.height = 200;
-            firmaCtx.strokeStyle = '#333';
-            firmaCtx.lineWidth = 2;
-            firmaCtx.lineCap = 'round';
-            firmaCtx.lineJoin = 'round';
+            rowFotoTecho = ws.lastRow.number + 1;
         }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
 
-        firmaCanvas.addEventListener('mousedown', startDraw);
+        ws.addRow([]);
+        ws.addRow(['Fotos Generales']);
+        let rowFotoGen = ws.lastRow.number + 1;
+        for (let i = 0; i < (data.fotosGenerales || []).length; i++) {
+            const base64 = data.fotosGenerales[i];
+            if (!base64) continue;
+            const imageId = workbook.addImage({ base64, extension: 'jpeg' });
+            ws.addRow([`Foto General ${i + 1}`]);
+            ws.addImage(imageId, {
+                tl: { col: 1, row: rowFotoGen },
+                ext: { width: 200, height: 120 }
+            });
+            rowFotoGen = ws.lastRow.number + 1;
+        }
+
+        // Descargar archivo
+        const buffer = await workbook.xlsx.writeBuffer();
+        const nombre = `Visita_Solar_${(data.cliente || 'Cliente').replace(/\s+/g, '_')}.xlsx`;
+        saveAs(new Blob([buffer]), nombre);
+        showToast('📊 Excel con imágenes descargado', 'success');
+    }
         firmaCanvas.addEventListener('mousemove', draw);
         firmaCanvas.addEventListener('mouseup', stopDraw);
         firmaCanvas.addEventListener('mouseleave', stopDraw);
