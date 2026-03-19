@@ -18,7 +18,6 @@
         initSteps();
         initGPS();
         initPhotos();
-        initTechoPhotos();
         initFirma();
         initActions();
         initConfig();
@@ -31,35 +30,6 @@
                 horasRespaldoGroup.style.display = this.checked ? '' : 'none';
             });
         }
-    }
-    // ========== FOTOS DEL TECHO ==========
-    function initTechoPhotos() {
-        const techoCamera = document.getElementById('techo-camera-input');
-        const techoGallery = document.getElementById('techo-gallery-input');
-        const btnCamera = document.getElementById('btn-techo-camara');
-        const btnGallery = document.getElementById('btn-techo-galeria');
-        if (btnCamera) btnCamera.addEventListener('click', () => techoCamera.click());
-        if (btnGallery) btnGallery.addEventListener('click', () => techoGallery.click());
-        if (techoCamera) techoCamera.addEventListener('change', handleTechoPhotos);
-        if (techoGallery) techoGallery.addEventListener('change', handleTechoPhotos);
-    }
-
-    function handleTechoPhotos(e) {
-        const files = e.target.files;
-        if (!files.length) return;
-        if (techoPhotos.length + files.length > 10) {
-            showToast('Máximo 10 fotos del techo permitidas', 'error');
-            return;
-        }
-        Array.from(files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                techoPhotos.push(ev.target.result);
-                renderTechoPhotos && renderTechoPhotos();
-            };
-            reader.readAsDataURL(file);
-        });
-        e.target.value = '';
     }
 
     // ========== FECHA/HORA ACTUAL ==========
@@ -588,40 +558,36 @@
     }
 
     // ========== FOTOS DEL TECHO ==========
-    function recolectarDatos() {
-        // ...existing code...
-        // Áreas disponibles dinámicas
-        data.areas = [];
-        const areasContainer = document.getElementById('areas-container');
-        if (areasContainer) {
-            areasContainer.querySelectorAll('.area-item').forEach(div => {
-                const index = div.dataset.index;
-                if (!index) return;
-                const largo = document.getElementById(`area-${index}-largo`)?.value || '';
-                const ancho = document.getElementById(`area-${index}-ancho`)?.value || '';
-                const util = document.getElementById(`area-${index}-util`)?.value || '';
-                const desc = document.getElementById(`area-${index}-descripcion`)?.value || '';
-                data.areas.push({
-                    descripcion: desc,
-                    largo,
-                    ancho,
-                    areaUtil: util
-                });
-            });
-        }
-
-        // Para compatibilidad con Excel/historial, tomar Área 1 como principal
-        const area1 = data.areas[0] || {};
-        data.mediciones.areaLargo = area1.largo || '';
-        data.mediciones.areaAncho = area1.ancho || '';
-        data.mediciones.areaUtil = area1.areaUtil || '';
-
-        // Incluir fotos
-        data.fotosTecho = techoPhotos.slice();
-        data.fotosGenerales = photos.slice();
-
-        return data;
+    function initTechoPhotos() {
+        const techoCamera = document.getElementById('techo-camera-input');
+        const techoGallery = document.getElementById('techo-gallery-input');
+        
+        const btnCamera = document.getElementById('btn-techo-camara');
+        const btnGallery = document.getElementById('btn-techo-galeria');
+        
+        if (btnCamera) btnCamera.addEventListener('click', () => techoCamera.click());
+        if (btnGallery) btnGallery.addEventListener('click', () => techoGallery.click());
+        
+        if (techoCamera) techoCamera.addEventListener('change', handleTechoPhotos);
+        if (techoGallery) techoGallery.addEventListener('change', handleTechoPhotos);
     }
+
+    function handleTechoPhotos(e) {
+        const files = e.target.files;
+        if (!files.length) return;
+        if (techoPhotos.length + files.length > 5) {
+            showToast('Máximo 5 fotos del techo permitidas', 'error');
+            return;
+        }
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                compressImage(ev.target.result, 800, 0.7, (compressed) => {
+                    techoPhotos.push(compressed);
+                    renderTechoPhotos();
+                });
+            };
+            reader.readAsDataURL(file);
         });
         e.target.value = '';
     }
@@ -664,88 +630,47 @@
         img.src = dataUrl;
     }
 
-    async function generarExcel(data) {
-        const workbook = new ExcelJS.Workbook();
-        const ws = workbook.addWorksheet('Visita Técnica');
-        ws.properties.defaultColWidth = 30;
-        ws.columns = [
-            { header: 'Campo', key: 'campo', width: 30 },
-            { header: 'Valor', key: 'valor', width: 50 }
-        ];
-
-        // Datos principales
-        ws.addRow(['Cliente', data.cliente]);
-        ws.addRow(['Dirección', data.direccion]);
-        ws.addRow(['Fecha', data.fecha]);
-        ws.addRow(['Hora', data.hora]);
-        ws.addRow(['Responsable', data.responsableVisita]);
-        ws.addRow(['Email', data.email]);
-        ws.addRow(['Teléfono', data.telefono]);
-        ws.addRow(['Tipo Cliente', data.tipoCliente]);
-        ws.addRow(['Tarifa CFE', data.tarifaCFE]);
-        ws.addRow(['kW Contratados', data.kilovatiosContratados]);
-        ws.addRow(['Requiere Baterías', data.requiereBaterias ? 'Sí' : 'No']);
-        ws.addRow(['Horas Respaldo', data.horasRespaldo]);
-        ws.addRow(['Consumo Bimestral', data.consumoBimestral]);
-        ws.addRow(['Pago Bimestral', data.pagoBimestral]);
-        ws.addRow(['Motivo', data.motivo]);
-        ws.addRow(['Tipo Techo', data.tipoTecho]);
-        ws.addRow(['Distancia tablero-paneles', data.distanciaTableroPaneles]);
-        ws.addRow(['Potencia transformador', data.transformadorPotencia]);
-        ws.addRow(['Área Útil', data.mediciones?.areaUtil]);
-        ws.addRow(['Inclinación', data.mediciones?.inclinacionTecho]);
-        ws.addRow(['Azimut', data.mediciones?.azimut]);
-        ws.addRow(['Altura Techo', data.mediciones?.alturaTecho]);
-        ws.addRow(['Horas Solar Pico', data.mediciones?.horasSolarPico]);
-        ws.addRow(['Irradiancia', data.mediciones?.irradiancia]);
-        ws.addRow(['Voltaje Red', data.mediciones?.voltajeRed]);
-        ws.addRow(['Interruptor Principal', data.mediciones?.capacidadInterruptor]);
-        ws.addRow(['Calibre Acometida', data.mediciones?.calibreAcometida]);
-        ws.addRow(['Equipo de Medición', data.equipoMedicion]);
-        ws.addRow(['Observaciones Mediciones', data.observacionesMediciones]);
-        ws.addRow(['Viabilidad', data.viabilidad]);
-        ws.addRow(['Observaciones Generales', data.observacionesGenerales]);
-        ws.addRow(['Recomendaciones', data.recomendaciones]);
-
-        // Espacio antes de imágenes
-        ws.addRow([]);
-        ws.addRow(['Fotos del Techo']);
-
-        // Insertar fotos del techo
-        let rowFotoTecho = ws.lastRow.number + 1;
-        for (let i = 0; i < (data.fotosTecho || []).length; i++) {
-            const base64 = data.fotosTecho[i];
-            if (!base64) continue;
-            const imageId = workbook.addImage({ base64, extension: 'jpeg' });
-            ws.addRow([`Foto Techo ${i + 1}`]);
-            ws.addImage(imageId, {
-                tl: { col: 1, row: rowFotoTecho },
-                ext: { width: 200, height: 120 }
-            });
-            rowFotoTecho = ws.lastRow.number + 1;
+    function renderPhotos() {
+        const gallery = document.getElementById('photo-gallery');
+        if (photos.length === 0) {
+            gallery.innerHTML = '<div class="photo-placeholder"><span>📷</span><p>Aún no hay fotos</p></div>';
+            return;
         }
+        gallery.innerHTML = photos.map((photo, i) =>
+            '<div class="photo-item">' +
+            '<img src="' + photo + '" alt="Foto ' + (i + 1) + '">' +
+            '<button class="photo-delete" data-index="' + i + '">✕</button>' +
+            '<span class="photo-number">' + (i + 1) + '/' + photos.length + '</span>' +
+            '</div>'
+        ).join('');
 
-        ws.addRow([]);
-        ws.addRow(['Fotos Generales']);
-        let rowFotoGen = ws.lastRow.number + 1;
-        for (let i = 0; i < (data.fotosGenerales || []).length; i++) {
-            const base64 = data.fotosGenerales[i];
-            if (!base64) continue;
-            const imageId = workbook.addImage({ base64, extension: 'jpeg' });
-            ws.addRow([`Foto General ${i + 1}`]);
-            ws.addImage(imageId, {
-                tl: { col: 1, row: rowFotoGen },
-                ext: { width: 200, height: 120 }
+        gallery.querySelectorAll('.photo-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                photos.splice(parseInt(btn.dataset.index), 1);
+                renderPhotos();
             });
-            rowFotoGen = ws.lastRow.number + 1;
-        }
-
-        // Descargar archivo
-        const buffer = await workbook.xlsx.writeBuffer();
-        const nombre = `Visita_Solar_${(data.cliente || 'Cliente').replace(/\s+/g, '_')}.xlsx`;
-        saveAs(new Blob([buffer]), nombre);
-        showToast('📊 Excel con imágenes descargado', 'success');
+        });
     }
+
+    // ========== FIRMA DIGITAL ==========
+    function initFirma() {
+        firmaCanvas = document.getElementById('firma-canvas');
+        if (!firmaCanvas) return;
+        firmaCtx = firmaCanvas.getContext('2d');
+
+        function resizeCanvas() {
+            const container = firmaCanvas.parentElement;
+            firmaCanvas.width = container.offsetWidth;
+            firmaCanvas.height = 200;
+            firmaCtx.strokeStyle = '#333';
+            firmaCtx.lineWidth = 2;
+            firmaCtx.lineCap = 'round';
+            firmaCtx.lineJoin = 'round';
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        firmaCanvas.addEventListener('mousedown', startDraw);
         firmaCanvas.addEventListener('mousemove', draw);
         firmaCanvas.addEventListener('mouseup', stopDraw);
         firmaCanvas.addEventListener('mouseleave', stopDraw);
@@ -804,32 +729,40 @@
     }
 
     function generarExcel(data) {
-        const clienteRows = [
-            ['DATOS DEL CLIENTE'],
-            ['Campo', 'Valor'],
-            ['Fecha', data.fecha],
-            ['Hora', data.hora],
-            ['Cliente', data.cliente],
-            ['Correo', data.email],
-            ['Teléfono', data.telefono],
-            ['Dirección', data.direccion],
-            ['Coordenadas GPS', data.gps],
-            ['Asesor', data.responsableVisita],
-            ['Tipo de Cliente', data.tipoCliente],
-            ['Tarifa CFE', data.tarifaCFE],
-            ['Kilovatios Contratados (kW)', data.kilovatiosContratados],
-            ['¿Requiere Baterías?', data.requiereBaterias ? 'Sí' : 'No'],
-            ['Horas de Respaldo', data.requiereBaterias ? data.horasRespaldo : ''],
-            ['Consumo Bimestral (kWh)', data.consumoBimestral],
-            ['Pago Bimestral (COP)', data.pagoBimestral],
-            ['Motivo / Interés', data.motivo],
-            [''],
-            ['CONCLUSIONES'],
-            ['Viabilidad', data.viabilidad],
-            ['Observaciones', data.observacionesGenerales],
-            ['Recomendaciones', data.recomendaciones]
-        ];
-        // Hoja 2: Evaluación del Sitio (Checklist)
+        // --- NUEVA IMPLEMENTACIÓN SOLO CON EXCELJS ---
+        const workbook = new ExcelJS.Workbook();
+        // Hoja 1: Cliente
+        const ws1 = workbook.addWorksheet('Cliente');
+        ws1.addRow(['DATOS DEL CLIENTE']);
+        ws1.addRow(['Campo', 'Valor']);
+        ws1.addRow(['Fecha', data.fecha]);
+        ws1.addRow(['Hora', data.hora]);
+        ws1.addRow(['Cliente', data.cliente]);
+        ws1.addRow(['Correo', data.email]);
+        ws1.addRow(['Teléfono', data.telefono]);
+        ws1.addRow(['Dirección', data.direccion]);
+        ws1.addRow(['Coordenadas GPS', data.gps]);
+        ws1.addRow(['Asesor', data.responsableVisita]);
+        ws1.addRow(['Tipo de Cliente', data.tipoCliente]);
+        ws1.addRow(['Tarifa CFE', data.tarifaCFE]);
+        ws1.addRow(['Kilovatios Contratados (kW)', data.kilovatiosContratados]);
+        ws1.addRow(['¿Requiere Baterías?', data.requiereBaterias ? 'Sí' : 'No']);
+        ws1.addRow(['Horas de Respaldo', data.requiereBaterias ? data.horasRespaldo : '']);
+        ws1.addRow(['Consumo Bimestral (kWh)', data.consumoBimestral]);
+        ws1.addRow(['Pago Bimestral (COP)', data.pagoBimestral]);
+        ws1.addRow(['Motivo / Interés', data.motivo]);
+        ws1.addRow(['']);
+        ws1.addRow(['CONCLUSIONES']);
+        ws1.addRow(['Viabilidad', data.viabilidad]);
+        ws1.addRow(['Observaciones', data.observacionesGenerales]);
+        ws1.addRow(['Recomendaciones', data.recomendaciones]);
+        ws1.columns = [{ width: 28 }, { width: 50 }];
+
+        // Hoja 2: Evaluación del Sitio
+        const ws2 = workbook.addWorksheet('Evaluación Sitio');
+        ws2.addRow(['EVALUACIÓN DEL SITIO']);
+        ws2.addRow(['']);
+        ws2.addRow(['Elemento', 'Estado']);
         const checkLabels = {
             'techo-estado': 'Estado general del techo',
             'carga-techo': 'Capacidad de carga del techo',
@@ -848,54 +781,43 @@
             'acceso-techo': 'Acceso al techo',
             'acceso-vehicular': 'Acceso vehicular'
         };
-        const checkRows = [
-            ['EVALUACIÓN DEL SITIO'], [''],
-            ['Elemento', 'Estado']
-        ];
         for (const [key, label] of Object.entries(checkLabels)) {
-            checkRows.push([label, (data.checklist?.[key] || 'Sin evaluar').toUpperCase()]);
+            ws2.addRow([label, (data.checklist?.[key] || 'Sin evaluar').toUpperCase()]);
         }
-        checkRows.push([''], ['Tipo de Techo', data.tipoTecho]);
-        checkRows.push(['Observaciones', data.observacionesChecklist]);
+        ws2.addRow(['']);
+        ws2.addRow(['Tipo de Techo', data.tipoTecho]);
+        ws2.addRow(['Observaciones', data.observacionesChecklist]);
+        ws2.columns = [{ width: 40 }, { width: 15 }];
 
         // Hoja 3: Mediciones
-        const medRows = [
-            ['MEDICIONES DEL SITIO'], [''],
-            ['Parámetro', 'Valor', 'Unidad'],
-            ['Largo del techo', data.mediciones?.areaLargo, 'm'],
-            ['Ancho del techo', data.mediciones?.areaAncho, 'm'],
-            ['Área útil disponible', data.mediciones?.areaUtil, 'm²'],
-            ['Inclinación del techo', data.mediciones?.inclinacionTecho, '°'],
-            ['Azimut / Orientación', data.mediciones?.azimut, '°'],
-            ['Altura del techo', data.mediciones?.alturaTecho, 'm'],
-            ['Horas Solar Pico', data.mediciones?.horasSolarPico, 'HSP'],
-            ['Irradiancia', data.mediciones?.irradiancia, 'kWh/m²/día'],
-            ['Voltaje en Red', data.mediciones?.voltajeRed, 'V'],
-            ['Interruptor Principal', data.mediciones?.capacidadInterruptor, 'A'],
-            ['Calibre Acometida', data.mediciones?.calibreAcometida, ''],
-            [''],
-            ['Distancia tablero → paneles', data.distanciaTableroPaneles, 'm'],
-            ['Potencia transformador', data.transformadorPotencia, 'kVA'],
-            ['Equipo de Medición', data.equipoMedicion],
-            ['Observaciones', data.observacionesMediciones]
-        ];
+        const ws3 = workbook.addWorksheet('Mediciones');
+        ws3.addRow(['MEDICIONES DEL SITIO']);
+        ws3.addRow(['']);
+        ws3.addRow(['Parámetro', 'Valor', 'Unidad']);
+        ws3.addRow(['Largo del techo', data.mediciones?.areaLargo, 'm']);
+        ws3.addRow(['Ancho del techo', data.mediciones?.areaAncho, 'm']);
+        ws3.addRow(['Área útil disponible', data.mediciones?.areaUtil, 'm²']);
+        ws3.addRow(['Inclinación del techo', data.mediciones?.inclinacionTecho, '°']);
+        ws3.addRow(['Azimut / Orientación', data.mediciones?.azimut, '°']);
+        ws3.addRow(['Altura del techo', data.mediciones?.alturaTecho, 'm']);
+        ws3.addRow(['Horas Solar Pico', data.mediciones?.horasSolarPico, 'HSP']);
+        ws3.addRow(['Irradiancia', data.mediciones?.irradiancia, 'kWh/m²/día']);
+        ws3.addRow(['Voltaje en Red', data.mediciones?.voltajeRed, 'V']);
+        ws3.addRow(['Interruptor Principal', data.mediciones?.capacidadInterruptor, 'A']);
+        ws3.addRow(['Calibre Acometida', data.mediciones?.calibreAcometida, '']);
+        ws3.addRow(['']);
+        ws3.addRow(['Distancia tablero → paneles', data.distanciaTableroPaneles, 'm']);
+        ws3.addRow(['Potencia transformador', data.transformadorPotencia, 'kVA']);
+        ws3.addRow(['Equipo de Medición', data.equipoMedicion]);
+        ws3.addRow(['Observaciones', data.observacionesMediciones]);
+        ws3.columns = [{ width: 28 }, { width: 15 }, { width: 12 }];
 
-        const wb = XLSX.utils.book_new();
-        const ws1 = XLSX.utils.aoa_to_sheet(clienteRows);
-        ws1['!cols'] = [{ wch: 28 }, { wch: 50 }];
-        XLSX.utils.book_append_sheet(wb, ws1, 'Cliente');
-
-        const ws2 = XLSX.utils.aoa_to_sheet(checkRows);
-        ws2['!cols'] = [{ wch: 40 }, { wch: 15 }];
-        XLSX.utils.book_append_sheet(wb, ws2, 'Evaluación Sitio');
-
-        const ws3 = XLSX.utils.aoa_to_sheet(medRows);
-        ws3['!cols'] = [{ wch: 28 }, { wch: 15 }, { wch: 12 }];
-        XLSX.utils.book_append_sheet(wb, ws3, 'Mediciones');
-
+        // Guardar archivo
         const fileName = 'Visita_Solar_' + (data.cliente || 'cliente').replace(/\s+/g, '_') + '_' + data.fecha + '.xlsx';
-        XLSX.writeFile(wb, fileName);
-        showToast('📊 Excel descargado: ' + fileName, 'success');
+        workbook.xlsx.writeBuffer().then(buffer => {
+            saveAs(new Blob([buffer]), fileName);
+            showToast('📊 Excel descargado: ' + fileName, 'success');
+        });
     }
     // ========== RECOLECTAR DATOS ==========
     function recolectarDatos() {
@@ -991,21 +913,21 @@
             return;
         }
 
-        const rows = [
-            ['ID', 'Fecha', 'Hora', 'Cliente', 'Email', 'Teléfono', 'Dirección', 'GPS',
-                'Asesor', 'Tipo Cliente', 'Tarifa CFE', 'kW Contratados',
-                'Requiere Baterías', 'Horas Respaldo',
-                'Consumo Bimestral kWh', 'Pago Bimestral COP',
-                'Tipo Techo',
-                'Distancia tablero-paneles (m)', 'Potencia transformador (kVA)',
-                'Área Útil m²', 'Inclinación°', 'Azimut°', 'HSP', 'Irradiancia',
-                'Voltaje Red V',
-                'Viabilidad',
-                'Observaciones', 'Recomendaciones']
-        ];
+        const workbook = new ExcelJS.Workbook();
+        const ws = workbook.addWorksheet('Todas las Visitas');
+        ws.addRow(['ID', 'Fecha', 'Hora', 'Cliente', 'Email', 'Teléfono', 'Dirección', 'GPS',
+            'Asesor', 'Tipo Cliente', 'Tarifa CFE', 'kW Contratados',
+            'Requiere Baterías', 'Horas Respaldo',
+            'Consumo Bimestral kWh', 'Pago Bimestral COP',
+            'Tipo Techo',
+            'Distancia tablero-paneles (m)', 'Potencia transformador (kVA)',
+            'Área Útil m²', 'Inclinación°', 'Azimut°', 'HSP', 'Irradiancia',
+            'Voltaje Red V',
+            'Viabilidad',
+            'Observaciones', 'Recomendaciones']);
 
         visitas.forEach(v => {
-            rows.push([
+            ws.addRow([
                 v.id, v.fecha, v.hora, v.cliente, v.email, v.telefono, v.direccion, v.gps,
                 v.responsableVisita, v.tipoCliente, v.tarifaCFE, v.kilovatiosContratados,
                 v.requiereBaterias ? 'Sí' : 'No', v.requiereBaterias ? v.horasRespaldo : '',
@@ -1019,12 +941,17 @@
                 v.observacionesGenerales, v.recomendaciones
             ]);
         });
-
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet(rows);
-        XLSX.utils.book_append_sheet(wb, ws, 'Todas las Visitas');
-        XLSX.writeFile(wb, 'Historial_Visitas_Solar_' + new Date().toISOString().split('T')[0] + '.xlsx');
-        showToast('📊 Excel con todas las visitas descargado', 'success');
+        ws.columns = [
+            { width: 10 }, { width: 10 }, { width: 8 }, { width: 18 }, { width: 18 }, { width: 14 }, { width: 18 }, { width: 18 },
+            { width: 14 }, { width: 12 }, { width: 10 }, { width: 10 }, { width: 8 }, { width: 10 }, { width: 12 }, { width: 14 },
+            { width: 12 }, { width: 18 }, { width: 14 }, { width: 10 }, { width: 10 }, { width: 10 }, { width: 10 }, { width: 10 },
+            { width: 10 }, { width: 12 }, { width: 18 }, { width: 18 }
+        ];
+        const fileName = 'Historial_Visitas_Solar_' + new Date().toISOString().split('T')[0] + '.xlsx';
+        workbook.xlsx.writeBuffer().then(buffer => {
+            saveAs(new Blob([buffer]), fileName);
+            showToast('📊 Excel con todas las visitas descargado', 'success');
+        });
     }
 
     // ========== GOOGLE SHEETS SYNC ==========
@@ -1106,28 +1033,32 @@
         const v = visitas.find(x => x.id === id);
         if (!v) return;
 
-        const rows = [
-            ['REPORTE - VISITA TÉCNICA PANELES SOLARES'], [''],
-            ['Campo', 'Valor'],
-            ['Fecha', v.fecha], ['Cliente', v.cliente], ['Dirección', v.direccion],
-            ['Tarifa CFE', v.tarifaCFE], ['Consumo Bimestral', v.consumoBimestral + ' kWh'],
-            ['Pago Bimestral', '$' + v.pagoBimestral],
-            ['Tipo de Techo', v.tipoTecho],
-            ['Área Útil', (v.mediciones?.areaUtil || '') + ' m²'],
-            ['Paneles', v.mediciones?.panelesEstimados],
-            ['Potencia', (v.mediciones?.potenciaSistema || '') + ' kWp'],
-            ['Generación Est.', (v.mediciones?.generacionEstimada || '') + ' kWh/mes'],
-            ['Viabilidad', v.viabilidad],
-            ['Presupuesto', '$' + (v.presupuestoEstimado || '')],
-            ['ROI', (v.roiEstimado || '') + ' años'],
-            ['Observaciones', v.observacionesGenerales],
-            ['Recomendaciones', v.recomendaciones]
-        ];
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet(rows);
-        ws['!cols'] = [{ wch: 25 }, { wch: 50 }];
-        XLSX.utils.book_append_sheet(wb, ws, 'Reporte');
-        XLSX.writeFile(wb, 'Visita_Solar_' + (v.cliente || 'reporte').replace(/\s+/g, '_') + '_' + v.fecha + '.xlsx');
+        const workbook = new ExcelJS.Workbook();
+        const ws = workbook.addWorksheet('Reporte');
+        ws.addRow(['REPORTE - VISITA TÉCNICA PANELES SOLARES']);
+        ws.addRow(['']);
+        ws.addRow(['Campo', 'Valor']);
+        ws.addRow(['Fecha', v.fecha]);
+        ws.addRow(['Cliente', v.cliente]);
+        ws.addRow(['Dirección', v.direccion]);
+        ws.addRow(['Tarifa CFE', v.tarifaCFE]);
+        ws.addRow(['Consumo Bimestral', v.consumoBimestral + ' kWh']);
+        ws.addRow(['Pago Bimestral', '$' + v.pagoBimestral]);
+        ws.addRow(['Tipo de Techo', v.tipoTecho]);
+        ws.addRow(['Área Útil', (v.mediciones?.areaUtil || '') + ' m²']);
+        ws.addRow(['Paneles', v.mediciones?.panelesEstimados]);
+        ws.addRow(['Potencia', (v.mediciones?.potenciaSistema || '') + ' kWp']);
+        ws.addRow(['Generación Est.', (v.mediciones?.generacionEstimada || '') + ' kWh/mes']);
+        ws.addRow(['Viabilidad', v.viabilidad]);
+        ws.addRow(['Presupuesto', '$' + (v.presupuestoEstimado || '')]);
+        ws.addRow(['ROI', (v.roiEstimado || '') + ' años']);
+        ws.addRow(['Observaciones', v.observacionesGenerales]);
+        ws.addRow(['Recomendaciones', v.recomendaciones]);
+        ws.columns = [{ width: 25 }, { width: 50 }];
+        const fileName = 'Visita_Solar_' + (v.cliente || 'reporte').replace(/\s+/g, '_') + '_' + v.fecha + '.xlsx';
+        workbook.xlsx.writeBuffer().then(buffer => {
+            saveAs(new Blob([buffer]), fileName);
+        });
     };
 
     window.appEliminarVisita = function (id) {
