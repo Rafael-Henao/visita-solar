@@ -1145,6 +1145,32 @@
         addGeoRow('Precisión GPS', data.analisisSolar?.precisionGPS, '');
         addGeoRow('Altitud', data.analisisSolar?.altitud, '');
         
+        // Trayectoria Solar
+        row++;
+        ws3.mergeCells(`A${row}:C${row}`);
+        ws3.getCell(`A${row}`).value = '🌅 TRAYECTORIA SOLAR DEL DÍA';
+        ws3.getCell(`A${row}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF9800' } };
+        ws3.getCell(`A${row}`).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        ws3.getCell(`A${row}`).alignment = { horizontal: 'center' };
+        ws3.getRow(row).height = 22;
+        row++;
+        
+        const addSolarRow = (param, valor, unidad) => {
+            const r = ws3.getRow(row);
+            r.getCell(1).value = param; r.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3E0' } }; r.getCell(1).border = border;
+            r.getCell(2).value = valor || '-'; r.getCell(2).border = border; r.getCell(2).alignment = {horizontal:'center'}; r.getCell(2).font = {bold:true};
+            r.getCell(3).value = unidad || ''; r.getCell(3).border = border;
+            row++;
+        };
+        
+        addSolarRow('🌅 Amanecer', data.analisisSolar?.amanecer, data.analisisSolar?.amanecerAzimut);
+        addSolarRow('☀️ Cénit Solar', data.analisisSolar?.cenitSolar, data.analisisSolar?.cenitElevacion);
+        addSolarRow('🌇 Atardecer', data.analisisSolar?.atardecer, data.analisisSolar?.atardecerAzimut);
+        addSolarRow('🕐 Horas de Luz', data.analisisSolar?.horasLuz, 'horas/día');
+        addSolarRow('🧭 Orientación Óptima', data.analisisSolar?.orientacionOptima, '');
+        addSolarRow('📐 Inclinación Óptima', data.analisisSolar?.inclinacionOptima, '');
+        addSolarRow('🌡️ Posición Solar Actual', data.analisisSolar?.posicionSolarActual, '');
+        
         // Áreas
         row++;
         ws3.mergeCells(`A${row}:C${row}`);
@@ -1325,6 +1351,37 @@
             }
         });
         
+        // Agregar brújula solar como imagen
+        if (data.brujulaSolarImg && data.brujulaSolarImg.startsWith('data:image')) {
+            try {
+                const base64 = data.brujulaSolarImg.split(',')[1];
+                const imageId = workbook.addImage({
+                    base64: base64,
+                    extension: 'png'
+                });
+                
+                // Encabezado para brújula
+                wsFotos.getRow(fotoRow).height = 22;
+                wsFotos.mergeCells(`A${fotoRow}:C${fotoRow}`);
+                wsFotos.getCell(`A${fotoRow}`).value = '🧭 BRÚJULA SOLAR - TRAYECTORIA DEL DÍA';
+                wsFotos.getCell(`A${fotoRow}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF9800' } };
+                wsFotos.getCell(`A${fotoRow}`).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                wsFotos.getCell(`A${fotoRow}`).alignment = { horizontal: 'center' };
+                wsFotos.getCell(`A${fotoRow}`).border = border;
+                fotoRow++;
+                
+                // Imagen de la brújula (más grande)
+                wsFotos.getRow(fotoRow).height = 180;
+                wsFotos.addImage(imageId, {
+                    tl: { col: 0.5, row: fotoRow - 0.9 },
+                    ext: { width: 220, height: 220 }
+                });
+                fotoRow++;
+            } catch(e) {
+                console.log('Error agregando brújula solar:', e);
+            }
+        }
+        
         if (fotoRow === 3) {
             wsFotos.mergeCells('A3:C3');
             wsFotos.getCell('A3').value = '📭 Sin fotos adjuntas';
@@ -1374,7 +1431,18 @@
             analisisSolar: {
                 coordenadas: coordsEl ? coordsEl.textContent : '',
                 precisionGPS: precisionEl ? precisionEl.textContent : '',
-                altitud: altitudeEl ? altitudeEl.textContent : ''
+                altitud: altitudeEl ? altitudeEl.textContent : '',
+                // Trayectoria Solar
+                amanecer: document.getElementById('sun-rise-time')?.textContent || '',
+                amanecerAzimut: document.getElementById('sun-rise-azimuth')?.textContent || '',
+                cenitSolar: document.getElementById('sun-noon-time')?.textContent || '',
+                cenitElevacion: document.getElementById('sun-noon-elevation')?.textContent || '',
+                atardecer: document.getElementById('sun-set-time')?.textContent || '',
+                atardecerAzimut: document.getElementById('sun-set-azimuth')?.textContent || '',
+                horasLuz: document.getElementById('sun-daylight')?.textContent || '',
+                orientacionOptima: document.getElementById('sun-optimal-orientation')?.textContent || '',
+                inclinacionOptima: document.getElementById('sun-optimal-tilt')?.textContent || '',
+                posicionSolarActual: document.getElementById('sun-current-pos')?.textContent || ''
             },
 
             // Checklist
@@ -1405,6 +1473,14 @@
             fotosRecibo: reciboPhotos.slice(),
             fotosArea1: area1Photos.slice(),
             observacionesFotos: document.getElementById('observaciones-fotos').value,
+            // Brújula solar (imagen del canvas)
+            brujulaSolarImg: (() => {
+                const canvas = document.getElementById('solar-compass');
+                if (canvas) {
+                    try { return canvas.toDataURL('image/png'); } catch(e) { return ''; }
+                }
+                return '';
+            })(),
             // Conclusión
             observacionesGenerales: document.getElementById('observaciones-generales').value,
             recomendaciones: document.getElementById('recomendaciones').value,
