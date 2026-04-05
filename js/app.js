@@ -22,6 +22,11 @@
         initActions();
         initConfig();
         registerServiceWorker();
+        initTechoPhotos();
+        initTransformadorPhotos();
+        initReciboPhotos();
+        initArea1Photos();
+        initIrradiacionAuto();
         // Mostrar/ocultar horas de respaldo según el checkbox de baterías
         const chkBaterias = document.getElementById('requiere-baterias');
         const horasRespaldoGroup = document.getElementById('horas-respaldo-group');
@@ -30,6 +35,248 @@
                 horasRespaldoGroup.style.display = this.checked ? '' : 'none';
             });
         }
+    }
+    
+    // ========== IRRADIACIÓN SOLAR AUTOMÁTICA ==========
+    function initIrradiacionAuto() {
+        const btn = document.getElementById('btn-obtener-irradiacion');
+        if (btn) {
+            btn.addEventListener('click', obtenerIrradiacionSolar);
+        }
+    }
+    
+    async function obtenerIrradiacionSolar() {
+        const status = document.getElementById('irradiacion-status');
+        const gpsCoords = document.getElementById('gps-coords').value;
+        
+        if (!gpsCoords || gpsCoords === 'Error al obtener ubicación') {
+            status.textContent = '⚠️ Primero obtén las coordenadas GPS en el Paso 1';
+            status.style.color = '#f44336';
+            return;
+        }
+        
+        // Extraer latitud y longitud
+        const match = gpsCoords.match(/([-\d.]+),\s*([-\d.]+)/);
+        if (!match) {
+            status.textContent = '⚠️ Formato de coordenadas inválido';
+            status.style.color = '#f44336';
+            return;
+        }
+        
+        const lat = parseFloat(match[1]);
+        const lon = parseFloat(match[2]);
+        
+        status.textContent = '⏳ Obteniendo datos de irradiación solar...';
+        status.style.color = '#2196F3';
+        
+        try {
+            // Usar NASA POWER API para datos de irradiación solar
+            const url = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=ALLSKY_SFC_SW_DWN&community=RE&longitude=${lon}&latitude=${lat}&start=20230101&end=20231231&format=JSON`;
+            
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Error en la API');
+            
+            const data = await response.json();
+            const values = Object.values(data.properties.parameter.ALLSKY_SFC_SW_DWN);
+            
+            // Calcular promedio anual (excluyendo valores -999)
+            const validValues = values.filter(v => v > 0);
+            const promedio = validValues.reduce((a, b) => a + b, 0) / validValues.length;
+            
+            // La irradiancia de NASA está en kWh/m²/día
+            const irradiancia = promedio.toFixed(2);
+            // HSP es aproximadamente igual a la irradiancia en kWh/m²/día
+            const hsp = promedio.toFixed(1);
+            
+            document.getElementById('irradiancia').value = irradiancia;
+            document.getElementById('horas-solar-pico').value = hsp;
+            
+            status.innerHTML = `✅ Datos obtenidos: <strong>${irradiancia} kWh/m²/día</strong> (promedio anual NASA POWER)`;
+            status.style.color = '#4CAF50';
+            
+            showToast('☀️ Irradiación solar obtenida automáticamente', 'success');
+        } catch (error) {
+            console.error('Error obteniendo irradiación:', error);
+            // Usar estimación basada en latitud si falla la API
+            const irradianciaEstimada = estimarIrradiancia(lat);
+            
+            document.getElementById('irradiancia').value = irradianciaEstimada.toFixed(2);
+            document.getElementById('horas-solar-pico').value = irradianciaEstimada.toFixed(1);
+            
+            status.innerHTML = `⚡ Estimación basada en latitud: <strong>${irradianciaEstimada.toFixed(2)} kWh/m²/día</strong>`;
+            status.style.color = '#FF9800';
+            
+            showToast('☀️ Irradiación estimada según latitud', 'success');
+        }
+    }
+    
+    function estimarIrradiancia(lat) {
+        // Estimación simple basada en latitud (para Colombia/México aprox 4-6 kWh/m²/día)
+        const absLat = Math.abs(lat);
+        if (absLat < 10) return 5.5;
+        if (absLat < 20) return 5.2;
+        if (absLat < 30) return 4.8;
+        if (absLat < 40) return 4.5;
+        return 4.0;
+    }
+    
+    // ========== FOTOS TRANSFORMADOR ==========
+    let transformadorPhotos = [];
+    function initTransformadorPhotos() {
+        const camInput = document.getElementById('transformador-camera-input');
+        const galInput = document.getElementById('transformador-gallery-input');
+        const btnCam = document.getElementById('btn-transformador-camara');
+        const btnGal = document.getElementById('btn-transformador-galeria');
+        if (btnCam) btnCam.addEventListener('click', () => camInput.click());
+        if (btnGal) btnGal.addEventListener('click', () => galInput.click());
+        if (camInput) camInput.addEventListener('change', handleTransformadorPhotos);
+        if (galInput) galInput.addEventListener('change', handleTransformadorPhotos);
+    }
+    function handleTransformadorPhotos(e) {
+        const files = e.target.files;
+        if (!files.length) return;
+        if (transformadorPhotos.length + files.length > 5) {
+            showToast('Máximo 5 fotos del transformador permitidas', 'error');
+            return;
+        }
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                compressImage(ev.target.result, 800, 0.7, (compressed) => {
+                    transformadorPhotos.push(compressed);
+                    renderTransformadorPhotos();
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+        e.target.value = '';
+    }
+    function renderTransformadorPhotos() {
+        const gallery = document.getElementById('transformador-gallery');
+        if (!gallery) return;
+        if (transformadorPhotos.length === 0) {
+            gallery.innerHTML = '<div class="photo-placeholder"><span>🔌</span><p>Sin fotos del transformador</p></div>';
+            return;
+        }
+        gallery.innerHTML = transformadorPhotos.map((photo, i) =>
+            '<div class="photo-item">' +
+            '<img src="' + photo + '" alt="Transformador ' + (i + 1) + '">' +
+            '<button class="photo-delete" data-index="' + i + '">✕</button>' +
+            '<span class="photo-number">' + (i + 1) + '/' + transformadorPhotos.length + '</span>' +
+            '</div>'
+        ).join('');
+        gallery.querySelectorAll('.photo-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                transformadorPhotos.splice(parseInt(btn.dataset.index), 1);
+                renderTransformadorPhotos();
+            });
+        });
+    }
+
+    // ========== FOTOS RECIBO ==========
+    let reciboPhotos = [];
+    function initReciboPhotos() {
+        const camInput = document.getElementById('recibo-camera-input');
+        const galInput = document.getElementById('recibo-gallery-input');
+        const btnCam = document.getElementById('btn-recibo-camara');
+        const btnGal = document.getElementById('btn-recibo-galeria');
+        if (btnCam) btnCam.addEventListener('click', () => camInput.click());
+        if (btnGal) btnGal.addEventListener('click', () => galInput.click());
+        if (camInput) camInput.addEventListener('change', handleReciboPhotos);
+        if (galInput) galInput.addEventListener('change', handleReciboPhotos);
+    }
+    function handleReciboPhotos(e) {
+        const files = e.target.files;
+        if (!files.length) return;
+        if (reciboPhotos.length + files.length > 3) {
+            showToast('Máximo 3 fotos del recibo permitidas', 'error');
+            return;
+        }
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                compressImage(ev.target.result, 800, 0.7, (compressed) => {
+                    reciboPhotos.push(compressed);
+                    renderReciboPhotos();
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+        e.target.value = '';
+    }
+    function renderReciboPhotos() {
+        const gallery = document.getElementById('recibo-gallery');
+        if (!gallery) return;
+        if (reciboPhotos.length === 0) {
+            gallery.innerHTML = '<div class="photo-placeholder"><span>🧾</span><p>Sin foto del recibo</p></div>';
+            return;
+        }
+        gallery.innerHTML = reciboPhotos.map((photo, i) =>
+            '<div class="photo-item">' +
+            '<img src="' + photo + '" alt="Recibo ' + (i + 1) + '">' +
+            '<button class="photo-delete" data-index="' + i + '">✕</button>' +
+            '<span class="photo-number">' + (i + 1) + '/' + reciboPhotos.length + '</span>' +
+            '</div>'
+        ).join('');
+        gallery.querySelectorAll('.photo-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                reciboPhotos.splice(parseInt(btn.dataset.index), 1);
+                renderReciboPhotos();
+            });
+        });
+    }
+
+    // ========== FOTOS ÁREA 1 ==========
+    let area1Photos = [];
+    function initArea1Photos() {
+        const camInput = document.getElementById('area-1-camera-input');
+        const galInput = document.getElementById('area-1-gallery-input');
+        const btnCam = document.getElementById('btn-area-1-camara');
+        const btnGal = document.getElementById('btn-area-1-galeria');
+        if (btnCam) btnCam.addEventListener('click', () => camInput.click());
+        if (btnGal) btnGal.addEventListener('click', () => galInput.click());
+        if (camInput) camInput.addEventListener('change', handleArea1Photos);
+        if (galInput) galInput.addEventListener('change', handleArea1Photos);
+    }
+    function handleArea1Photos(e) {
+        const files = e.target.files;
+        if (!files.length) return;
+        if (area1Photos.length + files.length > 5) {
+            showToast('Máximo 5 fotos del área permitidas', 'error');
+            return;
+        }
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                compressImage(ev.target.result, 800, 0.7, (compressed) => {
+                    area1Photos.push(compressed);
+                    renderArea1Photos();
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+        e.target.value = '';
+    }
+    function renderArea1Photos() {
+        const gallery = document.getElementById('area-1-gallery');
+        if (!gallery) return;
+        if (area1Photos.length === 0) {
+            gallery.innerHTML = '<div class="photo-placeholder"><span>🏞️</span><p>Sin fotos del área</p></div>';
+            return;
+        }
+        gallery.innerHTML = area1Photos.map((photo, i) =>
+            '<div class="photo-item">' +
+            '<img src="' + photo + '" alt="Área ' + (i + 1) + '">' +
+            '<button class="photo-delete" data-index="' + i + '">✕</button>' +
+            '<span class="photo-number">' + (i + 1) + '/' + area1Photos.length + '</span>' +
+            '</div>'
+        ).join('');
+        gallery.querySelectorAll('.photo-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                area1Photos.splice(parseInt(btn.dataset.index), 1);
+                renderArea1Photos();
+            });
+        });
     }
 
     // ========== FECHA/HORA ACTUAL ==========
@@ -729,88 +976,341 @@
     }
 
     function generarExcel(data) {
-        // --- NUEVA IMPLEMENTACIÓN SOLO CON EXCELJS ---
         const workbook = new ExcelJS.Workbook();
-        // Hoja 1: Cliente
-        const ws1 = workbook.addWorksheet('Cliente');
-        ws1.addRow(['DATOS DEL CLIENTE']);
-        ws1.addRow(['Campo', 'Valor']);
-        ws1.addRow(['Fecha', data.fecha]);
-        ws1.addRow(['Hora', data.hora]);
-        ws1.addRow(['Cliente', data.cliente]);
-        ws1.addRow(['Correo', data.email]);
-        ws1.addRow(['Teléfono', data.telefono]);
-        ws1.addRow(['Dirección', data.direccion]);
-        ws1.addRow(['Coordenadas GPS', data.gps]);
-        ws1.addRow(['Asesor', data.responsableVisita]);
-        ws1.addRow(['Tipo de Cliente', data.tipoCliente]);
-        ws1.addRow(['Tarifa CFE', data.tarifaCFE]);
-        ws1.addRow(['Kilovatios Contratados (kW)', data.kilovatiosContratados]);
-        ws1.addRow(['¿Requiere Baterías?', data.requiereBaterias ? 'Sí' : 'No']);
-        ws1.addRow(['Horas de Respaldo', data.requiereBaterias ? data.horasRespaldo : '']);
-        ws1.addRow(['Consumo Bimestral (kWh)', data.consumoBimestral]);
-        ws1.addRow(['Pago Bimestral (COP)', data.pagoBimestral]);
-        ws1.addRow(['Motivo / Interés', data.motivo]);
-        ws1.addRow(['']);
-        ws1.addRow(['CONCLUSIONES']);
-        ws1.addRow(['Viabilidad', data.viabilidad]);
-        ws1.addRow(['Observaciones', data.observacionesGenerales]);
-        ws1.addRow(['Recomendaciones', data.recomendaciones]);
-        ws1.columns = [{ width: 28 }, { width: 50 }];
-
-        // Hoja 2: Evaluación del Sitio
-        const ws2 = workbook.addWorksheet('Evaluación Sitio');
-        ws2.addRow(['EVALUACIÓN DEL SITIO']);
-        ws2.addRow(['']);
-        ws2.addRow(['Elemento', 'Estado']);
-        const checkLabels = {
-            'techo-estado': 'Estado general del techo',
-            'carga-techo': 'Capacidad de carga del techo',
-            'impermeabilizacion': 'Impermeabilización',
-            'orientacion-sur': 'Orientación hacia el sur',
-            'sombras': 'Libre de sombras',
-            'espacio': 'Espacio disponible suficiente',
-            'centro-carga': 'Centro de carga / Tablero principal',
-            'medidor': 'Medidor bidireccional',
-            'tierra': 'Sistema de tierra física',
-            'protecciones': 'Protecciones eléctricas',
-            'ruta-cable': 'Ruta de cableado',
-            'contrato-proveedor': 'Contrato vigente con el proveedor',
-            'acceso-medidor': 'Acceso al medidor de energía',
-            'andamio': 'Requiere andamio',
-            'acceso-techo': 'Acceso al techo',
-            'acceso-vehicular': 'Acceso vehicular'
+        workbook.creator = 'Solix SAS - Visita Técnica Solar';
+        workbook.created = new Date();
+        
+        // Estilos comunes
+        const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } };
+        const headerFont = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+        const labelFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F5E9' } };
+        const border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+        
+        // ========== HOJA 1: RESUMEN ==========
+        const ws1 = workbook.addWorksheet('Resumen');
+        ws1.mergeCells('A1:D1');
+        ws1.getCell('A1').value = '🌞 INFORME DE VISITA TÉCNICA SOLAR';
+        ws1.getCell('A1').font = { bold: true, size: 16, color: { argb: 'FF1B5E20' } };
+        ws1.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
+        ws1.getRow(1).height = 30;
+        
+        ws1.mergeCells('A2:D2');
+        ws1.getCell('A2').value = 'Solix SAS - Energía Solar';
+        ws1.getCell('A2').alignment = { horizontal: 'center' };
+        
+        // Datos Generales
+        let row = 4;
+        ws1.mergeCells(`A${row}:D${row}`);
+        ws1.getCell(`A${row}`).value = '📋 DATOS GENERALES';
+        ws1.getCell(`A${row}`).fill = headerFill;
+        ws1.getCell(`A${row}`).font = headerFont;
+        ws1.getCell(`A${row}`).alignment = { horizontal: 'center' };
+        ws1.getRow(row).height = 22;
+        row++;
+        
+        const addRow = (label1, val1, label2, val2) => {
+            const r = ws1.getRow(row);
+            r.getCell(1).value = label1; r.getCell(1).fill = labelFill; r.getCell(1).font = {bold:true}; r.getCell(1).border = border;
+            r.getCell(2).value = val1 || '-'; r.getCell(2).border = border;
+            r.getCell(3).value = label2; r.getCell(3).fill = labelFill; r.getCell(3).font = {bold:true}; r.getCell(3).border = border;
+            r.getCell(4).value = val2 || '-'; r.getCell(4).border = border;
+            r.height = 20;
+            row++;
         };
+        
+        addRow('Fecha', data.fecha, 'Hora', data.hora);
+        addRow('Técnico/Asesor', data.responsableVisita, 'Cliente', data.cliente);
+        addRow('Teléfono', data.telefono, 'Correo', data.email);
+        addRow('Dirección', data.direccion, 'Tipo Cliente', data.tipoCliente);
+        addRow('GPS', data.gps, '', '');
+        
+        // Consumo Energético
+        row++;
+        ws1.mergeCells(`A${row}:D${row}`);
+        ws1.getCell(`A${row}`).value = '⚡ CONSUMO ENERGÉTICO';
+        ws1.getCell(`A${row}`).fill = headerFill;
+        ws1.getCell(`A${row}`).font = headerFont;
+        ws1.getCell(`A${row}`).alignment = { horizontal: 'center' };
+        ws1.getRow(row).height = 22;
+        row++;
+        
+        addRow('Proveedor', data.proveedorEnergia, 'No. Servicio', data.numeroServicio);
+        addRow('Tarifa CFE', data.tarifaCFE, 'kW Contratados', data.kilovatiosContratados);
+        addRow('Consumo Bimestral', (data.consumoBimestral || '-') + ' kWh', 'Pago Bimestral', '$' + (data.pagoBimestral || '0'));
+        addRow('Requiere Baterías', data.requiereBaterias ? 'Sí' : 'No', 'Horas Respaldo', data.horasRespaldo || 'N/A');
+        
+        // Motivo
+        row++;
+        ws1.getCell(`A${row}`).value = 'Motivo/Interés:';
+        ws1.getCell(`A${row}`).fill = labelFill;
+        ws1.getCell(`A${row}`).font = {bold:true};
+        ws1.getCell(`A${row}`).border = border;
+        ws1.mergeCells(`B${row}:D${row}`);
+        ws1.getCell(`B${row}`).value = data.motivo || '-';
+        ws1.getCell(`B${row}`).border = border;
+        ws1.getCell(`B${row}`).alignment = { wrapText: true };
+        ws1.getRow(row).height = 35;
+        
+        ws1.columns = [{ width: 20 }, { width: 22 }, { width: 20 }, { width: 22 }];
+        
+        // ========== HOJA 2: EVALUACIÓN ==========
+        const ws2 = workbook.addWorksheet('Evaluación');
+        ws2.mergeCells('A1:B1');
+        ws2.getCell('A1').value = '🔍 EVALUACIÓN DEL SITIO';
+        ws2.getCell('A1').font = { bold: true, size: 14, color: { argb: 'FF1B5E20' } };
+        ws2.getCell('A1').alignment = { horizontal: 'center' };
+        ws2.getRow(1).height = 28;
+        
+        ws2.getRow(3).values = ['Elemento', 'Estado'];
+        ws2.getRow(3).eachCell(c => { c.fill = headerFill; c.font = headerFont; c.border = border; c.alignment = {horizontal:'center'}; });
+        ws2.getRow(3).height = 22;
+        
+        const checkLabels = {
+            'techo-estado': '🏠 Estado del techo',
+            'carga-techo': '📦 Capacidad de carga',
+            'impermeabilizacion': '💧 Impermeabilización',
+            'orientacion-sur': '🧭 Orientación sur',
+            'sombras': '🌳 Libre de sombras',
+            'espacio': '📐 Espacio disponible',
+            'centro-carga': '⚡ Centro de carga',
+            'medidor': '📊 Medidor bidireccional',
+            'tierra': '🔌 Tierra física',
+            'protecciones': '🛡️ Protecciones',
+            'ruta-cable': '🔗 Ruta cableado',
+            'contrato-proveedor': '📄 Contrato proveedor',
+            'acceso-medidor': '🚪 Acceso medidor',
+            'acceso-techo': '🪜 Acceso techo',
+            'acceso-vehicular': '🚗 Acceso vehicular',
+            'andamio': '🏗️ Requiere andamio'
+        };
+        
+        const statusColors = { 'bien': 'FF4CAF50', 'regular': 'FFFFC107', 'mal': 'FFF44336', 'na': 'FF9E9E9E' };
+        const statusText = { 'bien': '✅ BIEN', 'regular': '⚠️ REGULAR', 'mal': '❌ MAL', 'na': '➖ N/A' };
+        
+        row = 4;
         for (const [key, label] of Object.entries(checkLabels)) {
-            ws2.addRow([label, (data.checklist?.[key] || 'Sin evaluar').toUpperCase()]);
+            const estado = data.checklist?.[key] || 'Sin evaluar';
+            const r = ws2.getRow(row);
+            r.getCell(1).value = label; r.getCell(1).fill = labelFill; r.getCell(1).border = border;
+            r.getCell(2).value = statusText[estado] || '❓ ' + estado;
+            r.getCell(2).border = border;
+            r.getCell(2).alignment = { horizontal: 'center' };
+            if (statusColors[estado]) {
+                r.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: statusColors[estado] } };
+                r.getCell(2).font = { bold: true, color: { argb: estado === 'regular' ? 'FF000000' : 'FFFFFFFF' } };
+            }
+            r.height = 20;
+            row++;
         }
-        ws2.addRow(['']);
-        ws2.addRow(['Tipo de Techo', data.tipoTecho]);
-        ws2.addRow(['Observaciones', data.observacionesChecklist]);
-        ws2.columns = [{ width: 40 }, { width: 15 }];
-
-        // Hoja 3: Mediciones
-        const ws3 = workbook.addWorksheet('Mediciones');
-        ws3.addRow(['MEDICIONES DEL SITIO']);
-        ws3.addRow(['']);
-        ws3.addRow(['Parámetro', 'Valor', 'Unidad']);
-        ws3.addRow(['Largo del techo', data.mediciones?.areaLargo, 'm']);
-        ws3.addRow(['Ancho del techo', data.mediciones?.areaAncho, 'm']);
-        ws3.addRow(['Área útil disponible', data.mediciones?.areaUtil, 'm²']);
-        ws3.addRow(['Inclinación del techo', data.mediciones?.inclinacionTecho, '°']);
-        ws3.addRow(['Azimut / Orientación', data.mediciones?.azimut, '°']);
-        ws3.addRow(['Altura del techo', data.mediciones?.alturaTecho, 'm']);
-        ws3.addRow(['Horas Solar Pico', data.mediciones?.horasSolarPico, 'HSP']);
-        ws3.addRow(['Irradiancia', data.mediciones?.irradiancia, 'kWh/m²/día']);
-        ws3.addRow(['Voltaje en Red', data.mediciones?.voltajeRed, 'V']);
-        ws3.addRow(['Interruptor Principal', data.mediciones?.capacidadInterruptor, 'A']);
-        ws3.addRow(['Calibre Acometida', data.mediciones?.calibreAcometida, '']);
-        ws3.addRow(['']);
-        ws3.addRow(['Distancia tablero → paneles', data.distanciaTableroPaneles, 'm']);
-        ws3.addRow(['Potencia transformador', data.transformadorPotencia, 'kVA']);
-        ws3.addRow(['Equipo de Medición', data.equipoMedicion]);
-        ws3.addRow(['Observaciones', data.observacionesMediciones]);
-        ws3.columns = [{ width: 28 }, { width: 15 }, { width: 12 }];
+        
+        row++;
+        ws2.getCell(`A${row}`).value = 'Tipo de Techo:'; ws2.getCell(`A${row}`).fill = labelFill; ws2.getCell(`A${row}`).border = border;
+        ws2.getCell(`B${row}`).value = data.tipoTecho || '-'; ws2.getCell(`B${row}`).border = border;
+        row++;
+        ws2.getCell(`A${row}`).value = 'Observaciones:'; ws2.getCell(`A${row}`).fill = labelFill; ws2.getCell(`A${row}`).border = border;
+        ws2.getCell(`B${row}`).value = data.observacionesChecklist || '-'; ws2.getCell(`B${row}`).border = border;
+        ws2.getCell(`B${row}`).alignment = { wrapText: true };
+        ws2.getRow(row).height = 40;
+        
+        ws2.columns = [{ width: 28 }, { width: 20 }];
+        
+        // ========== HOJA 3: MEDICIONES SOLAR ==========
+        const ws3 = workbook.addWorksheet('Mediciones Solar');
+        ws3.mergeCells('A1:C1');
+        ws3.getCell('A1').value = '☀️ MEDICIONES Y ANÁLISIS SOLAR';
+        ws3.getCell('A1').font = { bold: true, size: 14, color: { argb: 'FF1B5E20' } };
+        ws3.getCell('A1').alignment = { horizontal: 'center' };
+        ws3.getRow(1).height = 28;
+        
+        row = 3;
+        // Áreas
+        ws3.mergeCells(`A${row}:C${row}`);
+        ws3.getCell(`A${row}`).value = '📐 ÁREAS DISPONIBLES';
+        ws3.getCell(`A${row}`).fill = headerFill; ws3.getCell(`A${row}`).font = headerFont;
+        ws3.getCell(`A${row}`).alignment = { horizontal: 'center' };
+        ws3.getRow(row).height = 22;
+        row++;
+        
+        if (data.areas && data.areas.length > 0) {
+            data.areas.forEach((area, idx) => {
+                const r = ws3.getRow(row);
+                r.getCell(1).value = `Área ${idx + 1}: ${area.descripcion || '-'}`; r.getCell(1).fill = labelFill; r.getCell(1).border = border;
+                r.getCell(2).value = `${area.largo || '-'} x ${area.ancho || '-'} m`; r.getCell(2).border = border;
+                r.getCell(3).value = `Útil: ${area.areaUtil || '-'} m²`; r.getCell(3).border = border;
+                row++;
+            });
+        } else {
+            ws3.getCell(`A${row}`).value = 'Sin áreas registradas'; ws3.getCell(`A${row}`).border = border;
+            row++;
+        }
+        
+        // Orientación
+        row++;
+        ws3.mergeCells(`A${row}:C${row}`);
+        ws3.getCell(`A${row}`).value = '🧭 ORIENTACIÓN E INCLINACIÓN';
+        ws3.getCell(`A${row}`).fill = headerFill; ws3.getCell(`A${row}`).font = headerFont;
+        ws3.getCell(`A${row}`).alignment = { horizontal: 'center' };
+        ws3.getRow(row).height = 22;
+        row++;
+        
+        const addMedRow = (param, valor, unidad) => {
+            const r = ws3.getRow(row);
+            r.getCell(1).value = param; r.getCell(1).fill = labelFill; r.getCell(1).border = border;
+            r.getCell(2).value = valor || '-'; r.getCell(2).border = border; r.getCell(2).alignment = {horizontal:'center'};
+            r.getCell(3).value = unidad; r.getCell(3).border = border;
+            row++;
+        };
+        
+        addMedRow('Inclinación techo', data.mediciones?.inclinacionTecho, '°');
+        addMedRow('Azimut/Orientación', data.mediciones?.azimut, '° (180=Sur)');
+        addMedRow('Altura techo', data.mediciones?.alturaTecho, 'm');
+        
+        // Irradiación Solar
+        row++;
+        ws3.mergeCells(`A${row}:C${row}`);
+        ws3.getCell(`A${row}`).value = '☀️ IRRADIACIÓN SOLAR';
+        ws3.getCell(`A${row}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF9800' } };
+        ws3.getCell(`A${row}`).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        ws3.getCell(`A${row}`).alignment = { horizontal: 'center' };
+        ws3.getRow(row).height = 22;
+        row++;
+        
+        const r1 = ws3.getRow(row);
+        r1.getCell(1).value = 'Horas Solar Pico (HSP)'; r1.getCell(1).fill = labelFill; r1.getCell(1).border = border;
+        r1.getCell(2).value = data.mediciones?.horasSolarPico || '-'; r1.getCell(2).border = border; r1.getCell(2).font = {bold:true, size:12}; r1.getCell(2).alignment = {horizontal:'center'};
+        r1.getCell(3).value = 'HSP/día'; r1.getCell(3).border = border;
+        row++;
+        
+        const r2 = ws3.getRow(row);
+        r2.getCell(1).value = 'Irradiancia'; r2.getCell(1).fill = labelFill; r2.getCell(1).border = border;
+        r2.getCell(2).value = data.mediciones?.irradiancia || '-'; r2.getCell(2).border = border; r2.getCell(2).font = {bold:true, size:12}; r2.getCell(2).alignment = {horizontal:'center'};
+        r2.getCell(3).value = 'kWh/m²/día'; r2.getCell(3).border = border;
+        row++;
+        
+        // Eléctrico
+        row++;
+        ws3.mergeCells(`A${row}:C${row}`);
+        ws3.getCell(`A${row}`).value = '⚡ INSTALACIÓN ELÉCTRICA';
+        ws3.getCell(`A${row}`).fill = headerFill; ws3.getCell(`A${row}`).font = headerFont;
+        ws3.getCell(`A${row}`).alignment = { horizontal: 'center' };
+        ws3.getRow(row).height = 22;
+        row++;
+        
+        addMedRow('Voltaje Red', data.mediciones?.voltajeRed, 'V');
+        addMedRow('Interruptor Principal', data.mediciones?.capacidadInterruptor, 'A');
+        addMedRow('Calibre Acometida', data.mediciones?.calibreAcometida, '');
+        addMedRow('Distancia tablero→paneles', data.distanciaTableroPaneles, 'm');
+        addMedRow('Potencia transformador', data.transformadorPotencia, 'kVA');
+        
+        row++;
+        ws3.getCell(`A${row}`).value = 'Equipo Medición:'; ws3.getCell(`A${row}`).fill = labelFill; ws3.getCell(`A${row}`).border = border;
+        ws3.mergeCells(`B${row}:C${row}`);
+        ws3.getCell(`B${row}`).value = data.equipoMedicion || '-'; ws3.getCell(`B${row}`).border = border;
+        row++;
+        ws3.getCell(`A${row}`).value = 'Observaciones:'; ws3.getCell(`A${row}`).fill = labelFill; ws3.getCell(`A${row}`).border = border;
+        ws3.mergeCells(`B${row}:C${row}`);
+        ws3.getCell(`B${row}`).value = data.observacionesMediciones || '-'; ws3.getCell(`B${row}`).border = border;
+        ws3.getCell(`B${row}`).alignment = { wrapText: true };
+        ws3.getRow(row).height = 35;
+        
+        ws3.columns = [{ width: 26 }, { width: 16 }, { width: 16 }];
+        
+        // ========== HOJA 4: CONCLUSIONES ==========
+        const ws4 = workbook.addWorksheet('Conclusiones');
+        ws4.mergeCells('A1:B1');
+        ws4.getCell('A1').value = '📝 CONCLUSIONES';
+        ws4.getCell('A1').font = { bold: true, size: 14, color: { argb: 'FF1B5E20' } };
+        ws4.getCell('A1').alignment = { horizontal: 'center' };
+        ws4.getRow(1).height = 28;
+        
+        const viabilidadColors = { 'excelente': 'FF4CAF50', 'bueno': 'FF2196F3', 'regular': 'FFFFC107', 'dificil': 'FFFF9800', 'no-viable': 'FFF44336' };
+        const viabilidadText = { 'excelente': '🟢 EXCELENTE', 'bueno': '🔵 BUENO', 'regular': '🟡 REGULAR', 'dificil': '🟠 DIFÍCIL', 'no-viable': '🔴 NO VIABLE' };
+        
+        row = 3;
+        ws4.getCell(`A${row}`).value = 'Viabilidad:'; ws4.getCell(`A${row}`).fill = labelFill; ws4.getCell(`A${row}`).font = {bold:true}; ws4.getCell(`A${row}`).border = border;
+        ws4.getCell(`B${row}`).value = viabilidadText[data.viabilidad] || data.viabilidad || 'No evaluada';
+        ws4.getCell(`B${row}`).border = border;
+        if (viabilidadColors[data.viabilidad]) {
+            ws4.getCell(`B${row}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: viabilidadColors[data.viabilidad] } };
+            ws4.getCell(`B${row}`).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        }
+        ws4.getRow(row).height = 25;
+        row += 2;
+        
+        ws4.getCell(`A${row}`).value = 'Observaciones:'; ws4.getCell(`A${row}`).fill = labelFill; ws4.getCell(`A${row}`).border = border;
+        row++;
+        ws4.mergeCells(`A${row}:B${row}`);
+        ws4.getCell(`A${row}`).value = data.observacionesGenerales || '-'; ws4.getCell(`A${row}`).border = border;
+        ws4.getCell(`A${row}`).alignment = { wrapText: true };
+        ws4.getRow(row).height = 50;
+        row += 2;
+        
+        ws4.getCell(`A${row}`).value = 'Recomendaciones:'; ws4.getCell(`A${row}`).fill = labelFill; ws4.getCell(`A${row}`).border = border;
+        row++;
+        ws4.mergeCells(`A${row}:B${row}`);
+        ws4.getCell(`A${row}`).value = data.recomendaciones || '-'; ws4.getCell(`A${row}`).border = border;
+        ws4.getCell(`A${row}`).alignment = { wrapText: true };
+        ws4.getRow(row).height = 50;
+        
+        ws4.columns = [{ width: 22 }, { width: 50 }];
+        
+        // ========== HOJA 5: FOTOS ==========
+        const wsFotos = workbook.addWorksheet('Fotos');
+        wsFotos.mergeCells('A1:C1');
+        wsFotos.getCell('A1').value = '📷 EVIDENCIA FOTOGRÁFICA';
+        wsFotos.getCell('A1').font = { bold: true, size: 14, color: { argb: 'FF1B5E20' } };
+        wsFotos.getCell('A1').alignment = { horizontal: 'center' };
+        wsFotos.getRow(1).height = 28;
+        
+        wsFotos.getRow(2).values = ['Categoría', 'Foto', 'Descripción'];
+        wsFotos.getRow(2).eachCell(c => { c.fill = headerFill; c.font = headerFont; c.border = border; c.alignment = {horizontal:'center'}; });
+        wsFotos.getRow(2).height = 22;
+        
+        let fotoRow = 3;
+        const FOTO_HEIGHT = 90;
+        
+        const addFoto = (cat, desc, base64) => {
+            const r = wsFotos.getRow(fotoRow);
+            r.getCell(1).value = cat; r.getCell(1).fill = labelFill; r.getCell(1).border = border; r.getCell(1).alignment = {horizontal:'center', vertical:'middle'};
+            r.getCell(2).border = border;
+            r.getCell(3).value = desc; r.getCell(3).border = border; r.getCell(3).alignment = {vertical:'middle', wrapText:true};
+            r.height = FOTO_HEIGHT;
+            
+            if (base64) {
+                try {
+                    const match = /^data:image\/(png|jpeg|jpg);base64,(.+)$/.exec(base64);
+                    if (match) {
+                        const ext = match[1] === 'jpg' ? 'jpeg' : match[1];
+                        const imgId = workbook.addImage({ base64: base64, extension: ext });
+                        wsFotos.addImage(imgId, { tl: { col: 1.05, row: fotoRow - 0.92 }, ext: { width: 105, height: 82 } });
+                    }
+                } catch(e) {}
+            }
+            fotoRow++;
+        };
+        
+        const cats = [
+            { arr: data.fotos, cat: '📷 General', desc: 'Foto general' },
+            { arr: data.fotosTecho, cat: '🏠 Techo', desc: 'Foto techo' },
+            { arr: data.fotosArea1, cat: '🏞️ Área', desc: 'Foto área' },
+            { arr: data.fotosTransformador, cat: '🔌 Transformador', desc: 'Foto transformador' },
+            { arr: data.fotosRecibo, cat: '🧾 Recibo', desc: 'Foto recibo' }
+        ];
+        cats.forEach(({arr, cat, desc}) => {
+            if (Array.isArray(arr) && arr.length > 0) {
+                arr.forEach((f, i) => addFoto(cat, `${desc} ${i+1}`, f));
+            }
+        });
+        
+        if (fotoRow === 3) {
+            wsFotos.mergeCells('A3:C3');
+            wsFotos.getCell('A3').value = '📭 Sin fotos adjuntas';
+            wsFotos.getCell('A3').alignment = { horizontal: 'center' };
+            wsFotos.getCell('A3').border = border;
+            wsFotos.getRow(3).height = 30;
+        }
+        
+        wsFotos.columns = [{ width: 18 }, { width: 16 }, { width: 35 }];
 
         // Guardar archivo
         const fileName = 'Visita_Solar_' + (data.cliente || 'cliente').replace(/\s+/g, '_') + '_' + data.fecha + '.xlsx';
@@ -847,6 +1347,8 @@
             observacionesChecklist: document.getElementById('observaciones-checklist').value,
             distanciaTableroPaneles: document.getElementById('distancia-tablero-paneles')?.value || '',
             transformadorPotencia: document.getElementById('transformador-potencia')?.value || '',
+            proveedorEnergia: document.getElementById('proveedor-energia')?.value || '',
+            numeroServicio: document.getElementById('numero-servicio')?.value || '',
             // Mediciones
             mediciones: {
                 inclinacionTecho: document.getElementById('inclinacion-techo').value,
@@ -862,6 +1364,10 @@
             observacionesMediciones: document.getElementById('observaciones-mediciones').value,
             // Fotos
             fotos: photos.slice(),
+            fotosTecho: techoPhotos.slice(),
+            fotosTransformador: transformadorPhotos.slice(),
+            fotosRecibo: reciboPhotos.slice(),
+            fotosArea1: area1Photos.slice(),
             observacionesFotos: document.getElementById('observaciones-fotos').value,
             // Conclusión
             observacionesGenerales: document.getElementById('observaciones-generales').value,

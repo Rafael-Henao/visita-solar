@@ -1,47 +1,58 @@
-const CACHE_NAME = 'visita-solar-v26';
-const ASSETS = [
-    './',
-    './index.html',
-    './css/styles.css',
-    './js/app.js',
-    './js/xlsx.full.min.js',
-    './manifest.json',
-    './icons/icon-192.png',
-    './icons/icon-512.png',
-    './icons/logo-solix.png'
+// Service Worker para Visita Técnica Solar - Solix SAS
+const CACHE_NAME = 'visita-solar-v1';
+const urlsToCache = [
+    '/',
+    '/index.html',
+    '/css/styles.css',
+    '/js/app.js',
+    '/js/xlsx.full.min.js',
+    '/manifest.json',
+    '/icons/icon-192.png',
+    '/icons/logo-solix.png'
 ];
 
+// Instalar Service Worker
 self.addEventListener('install', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+        caches.open(CACHE_NAME)
+            .then(cache => cache.addAll(urlsToCache))
+            .then(() => self.skipWaiting())
     );
-    self.skipWaiting();
 });
 
+// Activar Service Worker
 self.addEventListener('activate', event => {
     event.waitUntil(
-        caches.keys().then(keys =>
-            Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-        ).then(() => self.clients.claim())
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (cacheName !== CACHE_NAME) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => self.clients.claim())
     );
 });
 
+// Interceptar peticiones
 self.addEventListener('fetch', event => {
-    // Network-first: intenta la red, si falla usa caché
     event.respondWith(
-        fetch(event.request).then(response => {
-            if (response.status === 200) {
-                const clone = response.clone();
-                caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-            }
-            return response;
-        }).catch(() => {
-            return caches.match(event.request).then(cached => {
-                if (cached) return cached;
-                if (event.request.mode === 'navigate') {
-                    return caches.match('./index.html');
+        caches.match(event.request)
+            .then(response => {
+                if (response) {
+                    return response;
                 }
-            });
+                return fetch(event.request).then(response => {
+                    if (!response || response.status !== 200 || response.type !== 'basic') {
+                        return response;
+                    }
+                    const responseToCache = response.clone();
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, responseToCache);
+                    });
+                    return response;
+                });
+            })
     );
 });
-

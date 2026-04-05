@@ -11,6 +11,10 @@
     <link rel="stylesheet" href="css/styles.css">
     <!-- SheetJS para exportar Excel (local para funcionar offline) -->
     <script src="js/xlsx.full.min.js"></script>
+    <!-- ExcelJS para crear Excel con imágenes -->
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <!-- FileSaver para descargar archivos -->
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 </head>
 <body>
     <!-- ========== SPLASH SCREEN ========== -->
@@ -450,10 +454,19 @@
                     </div>
                     <div class="form-group">
                         <label>📸 Transformador (registro fotográfico)</label>
-                        <div style="display:flex; gap:0.6rem; margin-bottom:0.6rem; flex-wrap:wrap;">
-                            <input type="file" id="transformador-fotos" accept="image/*" multiple>
-                        </div>
                         <p class="hint">Incluye placa de datos, vista general y acometidas.</p>
+                        <div style="display: flex; gap: 0.6rem; margin-bottom: 0.8rem;">
+                            <button type="button" id="btn-transformador-camara" class="btn btn-primary btn-small">📸 Tomar Foto</button>
+                            <button type="button" id="btn-transformador-galeria" class="btn btn-secondary btn-small">📁 Galería</button>
+                        </div>
+                        <div id="transformador-gallery" class="photo-gallery" style="min-height: 80px;">
+                            <div class="photo-placeholder">
+                                <span>🔌</span>
+                                <p>Sin fotos del transformador</p>
+                            </div>
+                        </div>
+                        <input type="file" id="transformador-camera-input" accept="image/*" capture="environment" style="display:none">
+                        <input type="file" id="transformador-gallery-input" accept="image/*" multiple style="display:none">
                     </div>
                 </div>
 
@@ -487,8 +500,19 @@
                     </div>
                     <div class="form-group">
                         <label for="foto-recibo">📸 Foto del recibo de energía</label>
-                        <input type="file" id="foto-recibo" accept="image/*">
                         <p class="hint">Toma foto nítida donde se vea el número de servicio y consumos.</p>
+                        <div style="display: flex; gap: 0.6rem; margin-bottom: 0.8rem;">
+                            <button type="button" id="btn-recibo-camara" class="btn btn-primary btn-small">📸 Tomar Foto</button>
+                            <button type="button" id="btn-recibo-galeria" class="btn btn-secondary btn-small">📁 Galería</button>
+                        </div>
+                        <div id="recibo-gallery" class="photo-gallery" style="min-height: 80px;">
+                            <div class="photo-placeholder">
+                                <span>🧾</span>
+                                <p>Sin foto del recibo</p>
+                            </div>
+                        </div>
+                        <input type="file" id="recibo-camera-input" accept="image/*" capture="environment" style="display:none">
+                        <input type="file" id="recibo-gallery-input" accept="image/*" multiple style="display:none">
                     </div>
                 </div>
 
@@ -566,7 +590,18 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="area-1-fotos">📸 Fotos del área</label>
-                                    <input type="file" id="area-1-fotos" accept="image/*" multiple>
+                                    <div style="display: flex; gap: 0.6rem; margin-bottom: 0.8rem;">
+                                        <button type="button" id="btn-area-1-camara" class="btn btn-primary btn-small">📸 Tomar Foto</button>
+                                        <button type="button" id="btn-area-1-galeria" class="btn btn-secondary btn-small">📁 Galería</button>
+                                    </div>
+                                    <div id="area-1-gallery" class="photo-gallery" style="min-height: 80px;">
+                                        <div class="photo-placeholder">
+                                            <span>🏞️</span>
+                                            <p>Sin fotos del área</p>
+                                        </div>
+                                    </div>
+                                    <input type="file" id="area-1-camera-input" accept="image/*" capture="environment" style="display:none">
+                                    <input type="file" id="area-1-gallery-input" accept="image/*" multiple style="display:none">
                                 </div>
                                 <hr style="margin:0.8rem 0; border:none; border-top:1px dashed var(--border);">
                             </div>
@@ -592,6 +627,13 @@
 
                     <div class="medicion-card">
                         <h4>☀️ Irradiación Solar</h4>
+                        <p class="hint">Obtén los datos automáticamente desde tu ubicación GPS</p>
+                        <div style="margin-bottom: 1rem;">
+                            <button type="button" id="btn-obtener-irradiacion" class="btn btn-primary" style="width: 100%;">
+                                ☀️ Obtener Irradiación Automática
+                            </button>
+                        </div>
+                        <div id="irradiacion-status" style="color: #4CAF50; font-size: 0.85rem; margin-bottom: 0.8rem; font-weight: 500;"></div>
                         <div class="form-group">
                             <label for="horas-solar-pico">Horas Solar Pico (HSP)</label>
                             <input type="number" id="horas-solar-pico" step="0.1" placeholder="5.2">
