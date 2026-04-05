@@ -1123,7 +1123,30 @@
         ws3.getRow(1).height = 28;
         
         row = 3;
+        
+        // Análisis Solar y Geolocalización
+        ws3.mergeCells(`A${row}:C${row}`);
+        ws3.getCell(`A${row}`).value = '📍 ANÁLISIS SOLAR Y GEOLOCALIZACIÓN';
+        ws3.getCell(`A${row}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2196F3' } };
+        ws3.getCell(`A${row}`).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        ws3.getCell(`A${row}`).alignment = { horizontal: 'center' };
+        ws3.getRow(row).height = 22;
+        row++;
+        
+        const addGeoRow = (param, valor, unidad) => {
+            const r = ws3.getRow(row);
+            r.getCell(1).value = param; r.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE3F2FD' } }; r.getCell(1).border = border;
+            r.getCell(2).value = valor || '-'; r.getCell(2).border = border; r.getCell(2).alignment = {horizontal:'center'};
+            r.getCell(3).value = unidad || ''; r.getCell(3).border = border;
+            row++;
+        };
+        
+        addGeoRow('Coordenadas', data.analisisSolar?.coordenadas || data.gps, '');
+        addGeoRow('Precisión GPS', data.analisisSolar?.precisionGPS, '');
+        addGeoRow('Altitud', data.analisisSolar?.altitud, '');
+        
         // Áreas
+        row++;
         ws3.mergeCells(`A${row}:C${row}`);
         ws3.getCell(`A${row}`).value = '📐 ÁREAS DISPONIBLES';
         ws3.getCell(`A${row}`).fill = headerFill; ws3.getCell(`A${row}`).font = headerFont;
@@ -1322,6 +1345,12 @@
     // ========== RECOLECTAR DATOS ==========
     function recolectarDatos() {
         const requiereBaterias = document.getElementById('requiere-baterias')?.checked || false;
+        
+        // Obtener datos del análisis solar
+        const coordsEl = document.getElementById('solar-coords');
+        const precisionEl = document.getElementById('solar-precision');
+        const altitudeEl = document.getElementById('solar-altitude');
+        
         const data = {
             // Datos del Cliente
             fecha: document.getElementById('fecha').value,
@@ -1340,6 +1369,13 @@
             consumoBimestral: document.getElementById('consumo-bimestral').value,
             pagoBimestral: document.getElementById('pago-bimestral').value,
             motivo: document.getElementById('motivo').value,
+
+            // Análisis Solar y Geolocalización
+            analisisSolar: {
+                coordenadas: coordsEl ? coordsEl.textContent : '',
+                precisionGPS: precisionEl ? precisionEl.textContent : '',
+                altitud: altitudeEl ? altitudeEl.textContent : ''
+            },
 
             // Checklist
             checklist: {},
@@ -1578,12 +1614,65 @@
 
     // ========== CONFIGURACIÓN ==========
     function initConfig() {
-        const savedUrl = localStorage.getItem('sheets-url');
-        if (savedUrl) document.getElementById('sheets-url').value = savedUrl;
+        // Cargar datos guardados del técnico
+        const configTecnico = JSON.parse(localStorage.getItem('config_tecnico') || '{}');
+        if (configTecnico.nombre) document.getElementById('config-nombre-tecnico').value = configTecnico.nombre;
+        if (configTecnico.telefono) document.getElementById('config-telefono-tecnico').value = configTecnico.telefono;
+        if (configTecnico.email) document.getElementById('config-email-tecnico').value = configTecnico.email;
+        
+        // Cargar datos guardados de la empresa
+        const configEmpresa = JSON.parse(localStorage.getItem('config_empresa') || '{}');
+        if (configEmpresa.nombre) document.getElementById('config-nombre-empresa').value = configEmpresa.nombre;
+        if (configEmpresa.telefono) document.getElementById('config-telefono-empresa').value = configEmpresa.telefono;
+        if (configEmpresa.direccion) document.getElementById('config-direccion-empresa').value = configEmpresa.direccion;
+        
+        // Cargar preferencias de reporte
+        const configPrefs = JSON.parse(localStorage.getItem('config_preferencias') || '{}');
+        if (configPrefs.incluirMapa !== undefined) document.getElementById('config-incluir-mapa').checked = configPrefs.incluirMapa;
+        if (configPrefs.incluirFotos !== undefined) document.getElementById('config-incluir-fotos').checked = configPrefs.incluirFotos;
+        if (configPrefs.incluirFirma !== undefined) document.getElementById('config-incluir-firma').checked = configPrefs.incluirFirma;
+        
+        // Auto-rellenar responsable si no hay valor
+        const responsableInput = document.getElementById('responsable-visita');
+        if (responsableInput && !responsableInput.value && configTecnico.nombre) {
+            responsableInput.value = configTecnico.nombre;
+        }
 
-        document.getElementById('btn-guardar-config').addEventListener('click', () => {
-            localStorage.setItem('sheets-url', document.getElementById('sheets-url').value);
-            showToast('Configuración guardada ✓', 'success');
+        // Guardar datos del técnico
+        document.getElementById('btn-guardar-tecnico')?.addEventListener('click', () => {
+            const tecnico = {
+                nombre: document.getElementById('config-nombre-tecnico').value,
+                telefono: document.getElementById('config-telefono-tecnico').value,
+                email: document.getElementById('config-email-tecnico').value
+            };
+            localStorage.setItem('config_tecnico', JSON.stringify(tecnico));
+            // Actualizar el campo responsable en el formulario
+            if (document.getElementById('responsable-visita')) {
+                document.getElementById('responsable-visita').value = tecnico.nombre;
+            }
+            showToast('Datos del técnico guardados ✓', 'success');
+        });
+        
+        // Guardar datos de la empresa
+        document.getElementById('btn-guardar-empresa')?.addEventListener('click', () => {
+            const empresa = {
+                nombre: document.getElementById('config-nombre-empresa').value,
+                telefono: document.getElementById('config-telefono-empresa').value,
+                direccion: document.getElementById('config-direccion-empresa').value
+            };
+            localStorage.setItem('config_empresa', JSON.stringify(empresa));
+            showToast('Datos de empresa guardados ✓', 'success');
+        });
+        
+        // Guardar preferencias
+        document.getElementById('btn-guardar-preferencias')?.addEventListener('click', () => {
+            const prefs = {
+                incluirMapa: document.getElementById('config-incluir-mapa').checked,
+                incluirFotos: document.getElementById('config-incluir-fotos').checked,
+                incluirFirma: document.getElementById('config-incluir-firma').checked
+            };
+            localStorage.setItem('config_preferencias', JSON.stringify(prefs));
+            showToast('Preferencias guardadas ✓', 'success');
         });
 
         document.getElementById('btn-borrar-todo').addEventListener('click', () => {

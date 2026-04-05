@@ -53,8 +53,6 @@
             <a href="#" data-action="nueva-visita" class="active">📋 Nueva Visita</a>
             <a href="#" data-action="historial">📂 Historial de Visitas</a>
             <a href="#" data-action="exportar-todo">📊 Exportar Todo a Excel</a>
-            <a href="#" data-action="sync-sheets">☁️ Google Sheets</a>
-            <a href="#" data-action="sync-onedrive">💼 OneDrive 365</a>
             <a href="#" data-action="configuracion">⚙️ Configuración</a>
         </nav>
         <div class="sidebar-footer">
@@ -764,42 +762,61 @@
         <!-- VISTA: Configuración -->
         <div id="view-configuracion" class="view">
             <h2>⚙️ Configuración</h2>
+            
             <div class="config-section">
-                <h3>☁️ Google Sheets</h3>
-                <p class="hint">Pega la URL de tu Google Apps Script para sincronización automática</p>
+                <h3>👤 Datos del Técnico</h3>
+                <p class="hint">Configura tu información para que aparezca automáticamente en cada visita</p>
                 <div class="form-group">
-                    <label for="sheets-url">URL del Web App</label>
-                    <input type="url" id="sheets-url" placeholder="https://script.google.com/macros/s/...">
+                    <label for="config-nombre-tecnico">Nombre del Técnico</label>
+                    <input type="text" id="config-nombre-tecnico" placeholder="Tu nombre completo">
                 </div>
-                <button type="button" id="btn-guardar-config" class="btn btn-primary">Guardar Configuración</button>
+                <div class="form-group">
+                    <label for="config-telefono-tecnico">Teléfono de contacto</label>
+                    <input type="tel" id="config-telefono-tecnico" placeholder="300 123 4567">
+                </div>
+                <div class="form-group">
+                    <label for="config-email-tecnico">Email del Técnico</label>
+                    <input type="email" id="config-email-tecnico" placeholder="tecnico@solix.com">
+                </div>
+                <button type="button" id="btn-guardar-tecnico" class="btn btn-primary">💾 Guardar Datos del Técnico</button>
             </div>
+
             <div class="config-section">
-                <h3>💼 OneDrive / Microsoft 365</h3>
-                <p class="hint">Sincroniza las visitas directamente con el OneDrive empresarial usando Power Automate</p>
+                <h3>🏢 Datos de la Empresa</h3>
+                <p class="hint">Personaliza la información de tu empresa para los reportes</p>
                 <div class="form-group">
-                    <label for="onedrive-url">URL del Flow de Power Automate</label>
-                    <input type="url" id="onedrive-url" placeholder="https://prod-xx.westus.logic.azure.com:443/workflows/...">
+                    <label for="config-nombre-empresa">Nombre de la Empresa</label>
+                    <input type="text" id="config-nombre-empresa" placeholder="Solix SAS" value="Solix SAS">
                 </div>
-                <button type="button" id="btn-guardar-onedrive" class="btn btn-primary">💾 Guardar URL OneDrive</button>
-                <details class="config-help" style="margin-top: 0.8rem;">
-                    <summary style="cursor:pointer; color: var(--sky); font-weight:600;">📖 ¿Cómo configurar Power Automate? (paso a paso)</summary>
-                    <div class="help-content" style="margin-top:0.5rem; padding:0.8rem; background:#f0f5ff; border-radius:8px; font-size:0.82rem; line-height:1.6;">
-                        <p><strong>1.</strong> Entra a <a href="https://make.powerautomate.com" target="_blank" style="color:var(--sky)">make.powerautomate.com</a> con tu cuenta empresarial</p>
-                        <p><strong>2.</strong> Clic en <strong>+ Crear</strong> → <strong>Flujo de nube instantáneo</strong></p>
-                        <p><strong>3.</strong> Nombre: <em>"Visitas Solares Solix"</em> → Trigger: <strong>"Cuando se recibe una solicitud HTTP"</strong></p>
-                        <p><strong>4.</strong> En el trigger, pega este esquema JSON:</p>
-                        <pre style="background:#1B2E5A; color:#FFD54F; padding:0.5rem; border-radius:6px; overflow-x:auto; font-size:0.72rem;">{"type":"array","items":{"type":"object","properties":{"id":{"type":"integer"},"fecha":{"type":"string"},"cliente":{"type":"string"},"direccion":{"type":"string"},"gps":{"type":"string"}}}}</pre>
-                        <p><strong>5.</strong> Agrega acción: <strong>"Crear archivo" (OneDrive for Business)</strong></p>
-                        <p>• Carpeta: <em>/Visitas Solares/</em><br>• Nombre: <em>Visitas_@{utcNow()}.json</em><br>• Contenido: selecciona el <strong>Body</strong> del trigger</p>
-                        <p><strong>6.</strong> <strong>Guardar</strong> el flujo → Vuelve al trigger → Copia la <strong>URL HTTP POST</strong></p>
-                        <p><strong>7.</strong> Pega esa URL arriba y guarda 👆</p>
-                        <p style="margin-top:0.5rem;"><strong>💡 TIP:</strong> También puedes agregar una acción <em>"Agregar fila a tabla de Excel"</em> para que los datos vayan directo a un Excel en OneDrive.</p>
-                    </div>
-                </details>
+                <div class="form-group">
+                    <label for="config-telefono-empresa">Teléfono Empresa</label>
+                    <input type="tel" id="config-telefono-empresa" placeholder="601 123 4567">
+                </div>
+                <div class="form-group">
+                    <label for="config-direccion-empresa">Dirección Empresa</label>
+                    <input type="text" id="config-direccion-empresa" placeholder="Calle 123 #45-67, Bogotá">
+                </div>
+                <button type="button" id="btn-guardar-empresa" class="btn btn-primary">💾 Guardar Datos Empresa</button>
             </div>
+
+            <div class="config-section">
+                <h3>📊 Preferencias de Reporte</h3>
+                <p class="hint">Ajusta cómo se generan los reportes Excel</p>
+                <div class="form-group">
+                    <label><input type="checkbox" id="config-incluir-mapa" checked> Incluir mapa en el reporte</label>
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="config-incluir-fotos" checked> Incluir fotos en el Excel</label>
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="config-incluir-firma" checked> Incluir espacio para firma</label>
+                </div>
+                <button type="button" id="btn-guardar-preferencias" class="btn btn-primary">💾 Guardar Preferencias</button>
+            </div>
+            
             <div class="config-section card-accent">
                 <h3>📱 Información de la App</h3>
-                <p>Versión: 2.1.0 — Solix SAS</p>
+                <p>Versión: 2.2.0 — Solix SAS</p>
                 <p>Visitas guardadas: <span id="total-visitas">0</span></p>
                 <button type="button" id="btn-borrar-todo" class="btn btn-danger">🗑️ Borrar Todos los Datos</button>
             </div>
